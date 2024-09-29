@@ -1,10 +1,7 @@
 use axum::{Router, routing::{post,options}, extract::Json, response::Response, http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
 //use serde_json::to_string_pretty;
-use crate::runner::{
-    docker_run::docker_python_execution,
-    docker_build::docker_build_python
-};
+use crate::runner::console_run::python_console_run;
 
 
 #[derive(Serialize, Deserialize)]
@@ -16,9 +13,12 @@ struct CodeRequest {
 
 async fn get_code_output(Json(json_request): Json<CodeRequest>) -> Response {
     let code = json_request.code;
-    std::fs::write("./code/python-code/code.py", code.as_bytes()).expect("ERROR WRITING TO FILE.");
-    docker_build_python::docker_build();
-    let code_output = docker_python_execution::run_python_code();
+    let filename = "./code/python-code/code.py";
+    std::fs::create_dir_all("./code/python-code").unwrap();
+    std::fs::write(filename, code.as_bytes()).expect("ERROR WRITING TO FILE.");
+    let code_output = python_console_run::run_python(filename);
+    // docker_build_python::docker_build();
+    // let code_output = docker_python_execution::run_python_code();
 
     let response = Response::builder()
         .status(StatusCode::OK)
@@ -27,6 +27,7 @@ async fn get_code_output(Json(json_request): Json<CodeRequest>) -> Response {
         .header("Access-Control-Allow-Headers","Content-Type")
         .body(Body::from(code_output))
         .unwrap();
+
     return response;
 } 
 
