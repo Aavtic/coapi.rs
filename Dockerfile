@@ -1,20 +1,32 @@
-# Use a lightweight base image with Python installed
-FROM python:3.10-slim
+# Stage 1: Python base image
+FROM python:3.10-slim as python-base
 
-# Create a non-root user for security
-RUN useradd -m sandbox
+# Stage 2: Rust build stage
+FROM rust:1.70 as builder
 
 # Set the working directory
-WORKDIR /home/sandbox
+WORKDIR /rust-app
 
-# Copy the user's code into the container
-COPY ./code/python-code/code.py /home/sandbox/code.py
+# Copy the Cargo.toml and Cargo.lock files first to build dependencies
+COPY Cargo.toml Cargo.lock ./
 
-# Set permissions so the sandbox user can access the files
-RUN chown -R sandbox:sandbox /home/sandbox
+# Copy the source code
+COPY src ./src/
 
-# Switch to the non-root user
-USER sandbox
+# Build the Rust project in release mode
+RUN cargo build --release
 
-# Execute the Python script
-CMD ["python", "code.py"]
+# Stage 3: Final stage with Debian base and Python environment
+FROM debian:bullseye-slim
+
+# Update and install Python
+RUN apt-get update && apt-get install -y python3 && apt-get clean
+
+# Copy the compiled Rust binary from the builder stage
+COPY --from=builder /rust-app/target/release/coapi_rs /usr/local/bin/rust-app
+
+EXPOSE 8081
+
+# Set the entrypoint to run your Rust application
+CMD ["/usr/local/bin/rust-app"]
+
