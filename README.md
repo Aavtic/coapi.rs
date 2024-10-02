@@ -1,3 +1,5 @@
+![coapi-cropped](https://github.com/user-attachments/assets/9c0857c8-b400-4cec-acc3-25c2facc2277)
+
 <details>
 <summary>Table of Contents</summary>
 
