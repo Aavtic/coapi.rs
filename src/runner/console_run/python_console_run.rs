@@ -7,7 +7,10 @@ pub fn run_python(filename: &str) -> String {
         .output()
         .unwrap();
 
-    return String::from_utf8(command.stdout).unwrap();
+    if command.status.success() {
+        return String::from_utf8(command.stdout).unwrap();
+    } else {
+        return String::from_utf8(command.stderr).unwrap();
+    }
 }
-
 
