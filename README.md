@@ -16,7 +16,7 @@
 
 # COAPI-rs
 
-COAPI-rs is is a Rust axum server which responds with the output of code given. The server is still in it's early stages and currently only support [python] 
+COAPI-rs is is a Rust axum server which responds with the output of code given. The server is still in it's early stages and currently only support execution of [python] 
 language. 
 
 ## Installation
