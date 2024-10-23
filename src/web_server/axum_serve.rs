@@ -3,7 +3,6 @@ use serde::{Serialize, Deserialize};
 //use serde_json::to_string_pretty;
 use crate::runner::console_run::python_console_run;
 
-
 #[derive(Serialize, Deserialize)]
 struct CodeRequest {
     code: String,
@@ -16,6 +15,11 @@ struct CodeResponse {
     status: i32,
 }
 
+#[derive(Serialize, Deserialize)]
+struct StdinRequest {
+    stdin: String,
+    language: String,
+}
 
 async fn get_code_output(Json(json_request): Json<CodeRequest>) -> Response {
     let code = json_request.code;
@@ -52,11 +56,14 @@ async fn preflight_response() -> Response {
     return response;
 }
 
+async fn get_stdin() {
+}
+
 #[tokio::main]
-pub async fn code_output_api(addr: &str, path: &str) { 
+pub async fn code_output_api(addr: &str, _path: &str) { 
     let app = Router::new()
-        .route(path, post(get_code_output))
-        .route(path, options(preflight_response));
+        .route("/code", post(get_code_output))
+        .route("/code", options(preflight_response));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
