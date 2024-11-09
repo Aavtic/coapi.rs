@@ -1,7 +1,19 @@
 use axum::{Router, routing::{post,options}, extract::Json, response::Response, http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
-//use serde_json::to_string_pretty;
+use tower_http::services::ServeDir;
+use tower_http::cors::{CorsLayer, Any};
+use http::Method;
+// use mongodb::bson::{doc, Document};
+// use mongodb::Client;
+// use serde_json::to_string_pretty;
+
 use crate::runner::console_run::python_console_run;
+use crate::web_server::database::mongo_funcs;
+
+
+
+static DATABASE_NAME: &str = "coapidb";
+static QUESTIONS_COLLECTION_NAME: &str = "questions";
 
 
 #[derive(Serialize, Deserialize)]
@@ -14,6 +26,44 @@ struct CodeRequest {
 struct CodeResponse {
     output: String,
     status: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ExpectedInputOutput {
+    input: String,
+    output: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AddQuestion {
+    title: String,
+    description: String,
+    data: Vec<ExpectedInputOutput>
+}
+
+async fn serve_questions() -> Response {
+    let client = mongo_funcs::connect("mongodb://localhost:27017").await;
+    todo!();
+}
+
+
+async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response {
+    println!("got question request: {:?}", serde_json::to_string_pretty(&question_request));
+    let title =  &question_request.title;
+    let description = &question_request.description;
+    let data = &question_request.data;
+
+    let client = mongo_funcs::connect("mongodb://localhost:27017").await;
+
+    mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
+
+    println!("{}\n{}\n{:?}", title, description, data);
+    println!("Database updated!");
+
+    return Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Database Updated"))
+        .unwrap();
 }
 
 
@@ -53,11 +103,23 @@ async fn preflight_response() -> Response {
 }
 
 #[tokio::main]
-pub async fn code_output_api(addr: &str, path: &str) { 
+pub async fn code_output_api(addr: &str) { 
+    let cors = CorsLayer::new()
+        .allow_origin(Any) // Allow requests from any origin, for development purposes
+        .allow_methods([Method::POST, Method::OPTIONS]);
+
+    let api_routes = Router::new()
+        .route("/v1", post(get_code_output))
+        .route("/v1", options(preflight_response))
+        .route("/v1/create_question", options(preflight_response))
+        .route("/v1/create_question", post(insert_question));
+
     let app = Router::new()
-        .route(path, post(get_code_output))
-        .route(path, options(preflight_response));
+        .nest_service("/", ServeDir::new("coapi-frontend"))
+        .nest("/api", api_routes)
+        .layer(cors);
+
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app.into_make_service()).await.unwrap();
 }
