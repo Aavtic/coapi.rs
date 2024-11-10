@@ -1,4 +1,4 @@
-use axum::{Router, routing::{post,options}, extract::Json, response::Response, http::StatusCode, body::Body};
+use axum::{Router, routing::{get, post,options}, extract::Json, response::{Response, Html}, http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
 use tower_http::services::ServeDir;
 use tower_http::cors::{CorsLayer, Any};
@@ -9,6 +9,7 @@ use http::Method;
 
 use crate::runner::console_run::python_console_run;
 use crate::web_server::database::mongo_funcs;
+use crate::web_server::ssrenderer::ssrenderer;
 
 
 
@@ -34,16 +35,18 @@ pub struct ExpectedInputOutput {
     output: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AddQuestion {
-    title: String,
-    description: String,
+    pub title: String,
+    pub description: String,
     data: Vec<ExpectedInputOutput>
 }
 
-async fn serve_questions() -> Response {
+async fn serve_questions() -> Html<String> {
     let client = mongo_funcs::connect("mongodb://localhost:27017").await;
-    todo!();
+    let questions = mongo_funcs::get_all_questions(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME).await;
+    let ren_html = ssrenderer::generate_questions_html(questions);
+    return ren_html;
 }
 
 
@@ -102,6 +105,18 @@ async fn preflight_response() -> Response {
     return response;
 }
 
+async fn test_html() -> Response {
+    let html_code = r#"
+        "#.to_string();
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("content-type", "text/html; charset=UTF-8")
+        .body(Body::from(html_code)).unwrap();
+
+    return response;
+
+}
+
 #[tokio::main]
 pub async fn code_output_api(addr: &str) { 
     let cors = CorsLayer::new()
@@ -111,8 +126,9 @@ pub async fn code_output_api(addr: &str) {
     let api_routes = Router::new()
         .route("/v1", post(get_code_output))
         .route("/v1", options(preflight_response))
-        .route("/v1/create_question", options(preflight_response))
-        .route("/v1/create_question", post(insert_question));
+        .route("/v1/create_question", post(insert_question))
+        .route("/v1/get_questions", get(serve_questions));
+
 
     let app = Router::new()
         .nest_service("/", ServeDir::new("coapi-frontend"))
