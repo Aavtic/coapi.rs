@@ -6,6 +6,7 @@ use mongodb::bson::{doc, Document};
 use mongodb::Client;
 use mongodb::options::ClientOptions;
 use serde::{Serialize, Deserialize};
+use futures::StreamExt;
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -14,10 +15,15 @@ struct PersonDetails {
     age: u16,
 }
 
-pub async fn get_all_questions(client: &Client, db_name: &str, coll_name: &str) {
+pub async fn get_all_questions(client: &Client, db_name: &str, coll_name: &str) -> Vec<AddQuestion>{
     let collection = client.database(db_name).collection::<AddQuestion>(coll_name);
-    let result = collection.find(doc! {}).await.unwrap();
-    todo!();
+    let mut result = collection.find(doc! {}).await.unwrap();
+    let mut questions = Vec::new();
+
+    while let Some(doc) = result.next().await {
+        questions.push(doc.unwrap())
+    }
+    return questions;
 }
 
 pub async fn create_collection(client: &Client, db_name: &str, coll_name: &str) {
