@@ -1,0 +1,157 @@
+body {
+    background-color: #090909;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #e4e4f2;
+}
+
+@keyframes heading {
+    0% {
+        color: red;
+    }
+    10% {
+        color: yellow;
+    }
+    40% {
+        color: red;
+    }
+    50% {
+        color: yellow;
+    }
+}
+
+@keyframes notification {
+    0% {
+        color: white;
+        background-color: #4CAF50; 
+    }
+    50% {
+        color: #4CAF50;
+        background-color: white;
+    }
+}
+
+
+.cursor {
+    animation-name: heading;
+    animation-duration: 2s;
+    animation-delay: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in;
+}
+
+textarea,optgroup {
+    font: inherit;
+    margin: 0;
+}
+
+optgroup {
+    font-weight: bold;
+}
+
+h1 {
+    color: red;
+    text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.5);
+}
+
+
+.runbutton {
+    background-color: #d41111;
+    margin-top: 10px; 
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.add_button:hover {
+    background-color: #504bd1;
+    transition: background-color 0.5s ease;
+}
+
+.add_button {
+    background-color: #d41111;
+    color: #e4e4f2;
+    border: aliceblue;
+    border-radius: 4px;
+    padding: 5px 10px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+}
+
+form {
+    max-width: 600px;
+    margin: 20px auto;
+    /*! background-color: #333; */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    flex-direction: column;
+    display: flex;
+    gap: 5px;
+}
+
+label {
+    color: #e4e4f2;
+    display: block;
+    margin-top: 15px;
+    font-weight: normal;
+    /*! font-size: normal; */
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    background-color: #504bd1;
+    color: #e4e4f2;
+    border: 1px solid grey;
+    border-radius: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+textarea {
+    resize: vertical;
+    
+}
+
+input[type="text"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #d41111;
+}
+
+button[type="submit"] {
+    background-color: #d41111;
+    color: #e4e4f2;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: background-color 0.5s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #504bd1;
+}
+
+.notification {
+    animation-name: notification;
+    animation-duration: 1s;
+    animation-timing-function: ease-in;
+    
+    display: none;
+    position: fixed;
+    bottom: 20px; /* Adjust to place it where you like */
+    right: 20px; /* Adjust if needed */
+    background-color: #4CAF50; /* Success color */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+}

@@ -105,18 +105,6 @@ async fn preflight_response() -> Response {
     return response;
 }
 
-async fn test_html() -> Response {
-    let html_code = r#"
-        "#.to_string();
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .header("content-type", "text/html; charset=UTF-8")
-        .body(Body::from(html_code)).unwrap();
-
-    return response;
-
-}
-
 #[tokio::main]
 pub async fn code_output_api(addr: &str) { 
     let cors = CorsLayer::new()

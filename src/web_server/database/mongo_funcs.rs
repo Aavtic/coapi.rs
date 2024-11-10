@@ -2,11 +2,25 @@ extern crate mongodb;
 
 use crate::axum_serve::AddQuestion;
 
+
 use mongodb::bson::{doc, Document};
 use mongodb::Client;
 use mongodb::options::ClientOptions;
 use serde::{Serialize, Deserialize};
 use futures::StreamExt;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ExpectedInputOutput {
+    input: String,
+    output: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Question {
+    title: String,
+    description: String,
+    data: Vec<ExpectedInputOutput>
+}
 
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

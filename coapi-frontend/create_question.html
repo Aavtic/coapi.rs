@@ -1,0 +1,46 @@
+<html lang="en"><head>
+    <meta charset="utf-8">
+    <title>Python Problem creation</title>
+    <link rel="stylesheet" href="styles/create_problem.css">
+  </head>
+
+  <body>
+      <h1><code>Python Problem creation<b class="cursor">▊</b></code></h1>
+
+          <form id="problem-form">
+        <!-- Title Field -->
+        <label for="title">Problem Title:</label>
+        <input class="title" type="text" id="title" name="title" placeholder="Enter the problem title" required="">
+        
+        <br><br>
+
+        <!-- Description Field -->
+        <label for="description">Problem Description:</label>
+        <textarea class="description" id="description" name="description" rows="5" placeholder="Describe the problem and expected solution" required=""></textarea>
+        
+        <br><br>
+
+         <div id="output-container">
+
+            <label for="argument1">Argument 1:</label>
+            <textarea id="arugment-1" name="argument" rows="3" placeholder="Enter the argument" required=""></textarea>
+            
+            <label for="output-1">Expected Output 1:</label>
+            <textarea id="expected-output1" name="expected-output" rows="3" placeholder="Enter the expected output" required=""></textarea>
+
+
+        </div>
+        <button class="add_button" type="button">Add</button>
+
+        <br><br>
+
+        <!-- Submit Button -->
+        <button class="submit_button" type="submit">Submit</button>
+
+      </form>
+
+    <div id="notification" class="notification">Question submitted successfully!</div>
+    <script src="./scripts/create_questions.js"></script>
+  
+
+  </body></html>
