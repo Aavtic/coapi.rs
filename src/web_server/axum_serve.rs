@@ -1,4 +1,4 @@
-use axum::{Router, routing::{get, post,options}, extract::Json, response::{Response, Html}, http::StatusCode, body::Body};
+use axum::{Router, routing::{get, post,options}, extract::{Json, Path}, response::{Response, Html}, http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
 use tower_http::services::ServeDir;
 use tower_http::cors::{CorsLayer, Any};
@@ -29,17 +29,33 @@ struct CodeResponse {
     status: i32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ExpectedInputOutput {
     input: String,
     output: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AddQuestion {
     pub title: String,
     pub description: String,
-    data: Vec<ExpectedInputOutput>
+    pub data: Vec<ExpectedInputOutput>
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetQuestion {
+    question_id: String,
+}
+
+
+async fn serve_question(Path(question_id): Path<String>) -> Html <String> {
+    let client = mongo_funcs::connect("mongodb://localhost:27017").await;
+    if let Some(question) = mongo_funcs::get_question(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, question_id).await {
+        let ren_html = ssrenderer::generate_question_html(question);
+        return ren_html;
+    } else {
+        return ssrenderer::error_page();
+    }
 }
 
 async fn serve_questions() -> Html<String> {
@@ -117,10 +133,14 @@ pub async fn code_output_api(addr: &str) {
         .route("/v1/create_question", post(insert_question))
         .route("/v1/get_questions", get(serve_questions));
 
+    let page_routes = Router::new()
+        .route("/question/:id", get(serve_question));
+
 
     let app = Router::new()
         .nest_service("/", ServeDir::new("coapi-frontend"))
         .nest("/api", api_routes)
+        .nest("/pages", page_routes)
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
