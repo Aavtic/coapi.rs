@@ -1,27 +1,33 @@
 extern crate mongodb;
 
-use crate::axum_serve::AddQuestion;
-
+use crate::axum_serve::{AddQuestion, ExpectedInputOutput};
 
 use mongodb::bson::{doc, Document};
 use mongodb::Client;
 use mongodb::options::ClientOptions;
 use serde::{Serialize, Deserialize};
-use futures::StreamExt;
+use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ExpectedInputOutput {
-    input: String,
-    output: String,
+use futures::stream::StreamExt;
+
+trait DbStruct {
+    fn get_uuid(&self) -> String;
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Question {
-    title: String,
-    description: String,
-    data: Vec<ExpectedInputOutput>
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DbAddQuestion {
+    pub title: String,
+    pub description: String,
+    pub data: Vec<ExpectedInputOutput>,
+    pub uuid: String,
 }
 
+impl DbStruct for DbAddQuestion {
+    fn get_uuid(&self) -> String {
+        self.uuid.to_string()
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct PersonDetails {
@@ -29,8 +35,19 @@ struct PersonDetails {
     age: u16,
 }
 
-pub async fn get_all_questions(client: &Client, db_name: &str, coll_name: &str) -> Vec<AddQuestion>{
-    let collection = client.database(db_name).collection::<AddQuestion>(coll_name);
+pub async fn get_question(client: &Client, db_name: &str, coll_name: &str, questionId: String) -> Option<DbAddQuestion> {
+    let collection = client.database(db_name).collection::<DbAddQuestion>(coll_name);
+    let result = collection.find_one(doc! {"uuid": questionId}).await.unwrap();
+
+    if let Some(res) = result {
+        return Some(res)
+    } else {
+        return None
+    }
+}
+
+pub async fn get_all_questions(client: &Client, db_name: &str, coll_name: &str) -> Vec<DbAddQuestion>{
+    let collection = client.database(db_name).collection::<DbAddQuestion>(coll_name);
     let mut result = collection.find(doc! {}).await.unwrap();
     let mut questions = Vec::new();
 
@@ -46,9 +63,16 @@ pub async fn create_collection(client: &Client, db_name: &str, coll_name: &str) 
 }
 
 pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &AddQuestion) {
-    let coll = client.database(db_name).collection::<AddQuestion>(coll_name);
+    let coll = client.database(db_name).collection::<DbAddQuestion>(coll_name);
+    let doc_data = &doc.data;
+    let db_update = DbAddQuestion {
+        title: doc.title.clone(),
+        description: doc.description.clone(),
+        data: doc_data.to_vec(),
+        uuid: Uuid::new_v4().to_string(),
+    };
 
-    coll.insert_one(doc).await.unwrap();
+    coll.insert_one(db_update).await.unwrap();
 }
 
 pub async fn find_document(client: &Client, db_name: &str, coll_name: &str, filter: Document) {
