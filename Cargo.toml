@@ -16,3 +16,4 @@ tower-http = { version = "0.6.1", features = ["cors", "fs"] }
 bson = { version = "2", features = ["chrono-0_4"] }
 http = "1.1.0"
 futures = "0.3.31"
+uuid = { version = "1.11.0", features = ["v4"] }
