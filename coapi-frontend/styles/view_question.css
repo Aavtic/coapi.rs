@@ -1,0 +1,95 @@
+body {
+    background-color: #090909;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #e4e4f2;
+}
+
+@keyframes heading {
+    0% {
+        color: red;
+    }
+    10% {
+        color: yellow;
+    }
+    40% {
+        color: red;
+    }
+    50% {
+        color: yellow;
+    }
+}
+
+.cursor {
+    animation-name: heading;
+    animation-duration: 2s;
+    animation-delay: 2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in;
+}
+
+textarea,optgroup{font:inherit;margin:0}optgroup{font-weight:bold}
+
+h1 {
+    color: red;
+}
+
+.container {
+    display: flex;
+    flex-direction: row; 
+    justify-content: flex-start; 
+    margin-top: 10px; 
+}
+
+.right {
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.code_box_button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.codebox {
+    color: whitesmoke;
+    background-color: #504bd1;
+    opacity: 0.5;
+    width: 90%;
+    height: 300px;
+    box-sizing: border-box;
+    border: 2px solid grey;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.output {
+    align-items: flex-start;
+    justify-content: flex-start
+    white-space: pre-wrap;
+    width: 40%; /* Set the width of the output */
+    height: 280px;
+    border: 1px solid grey;
+    padding: 12px;
+    border-radius: 4px;
+    background-color: #333; /* Set a background for visibility */
+    color: #e4e4f2; /* Text color */
+    margin-right: 100px;
+}
+
+.outputext {
+}
+
+.runbutton {
+    background-color: #d41111;
+    margin-top: 10px; 
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.runbutton:hover {
+    background-color: #504bd1;
+    transition: background-color 0.5s ease;
+}
