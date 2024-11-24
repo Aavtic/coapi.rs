@@ -1,4 +1,7 @@
-use axum::{Router, routing::{get, post,options}, extract::{Json, Path}, response::{Response, Html}, http::StatusCode, body::Body};
+use axum::{Router, routing::{get, post,options},
+    extract::{Json, Path},
+    response::{Response, Html},
+    http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
 use tower_http::services::ServeDir;
 use tower_http::cors::{CorsLayer, Any};
@@ -10,6 +13,7 @@ use http::Method;
 use crate::runner::console_run::python_console_run;
 use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
+use crate::web_server::utils::temp_utils;
 
 
 
@@ -47,6 +51,30 @@ pub struct GetQuestion {
     question_id: String,
 }
 
+async fn get_live_code_output(Json(json_request): Json<CodeRequest>) -> Response {
+    println!("received request: {:?}", serde_json::to_string_pretty(&json_request).unwrap());
+    let code = json_request.code;
+    let temp_folder_format = "./live-code/pyenv-XXXX";
+    let temp_folder = temp_utils::create_temp_dir(temp_folder_format).unwrap().trim().to_string();
+    let file_path = &(temp_folder.clone() + "/main.py");
+    temp_utils::create_temp_file(&(temp_folder + "/main.py"));
+    std::fs::write(file_path, code.as_bytes()).expect("ERROR WRITING TO FILE.");
+    // let proc_output = python_console_run::run_python(filename);
+    // let code_output = CodeResponse{output: proc_output.output, status: proc_output.status};
+    // docker_build_python::docker_build();
+    // let code_output = docker_python_execution::run_python_code();
+
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("Access-Control-Allow-Origin","*")
+        .header("Access-Control-Allow-Methods", "POST")
+        .header("Access-Control-Allow-Headers","Content-Type")
+        .body(Body::from(serde_json::to_string("AOK").unwrap()))
+        .unwrap();
+    println!("RESPONSE SENT!");
+
+    return response;
+} 
 
 async fn serve_question(Path(question_id): Path<String>) -> Html <String> {
     let client = mongo_funcs::connect("mongodb://localhost:27017").await;
@@ -131,7 +159,8 @@ pub async fn code_output_api(addr: &str) {
         .route("/v1", post(get_code_output))
         .route("/v1", options(preflight_response))
         .route("/v1/create_question", post(insert_question))
-        .route("/v1/get_questions", get(serve_questions));
+        .route("/v1/get_questions", get(serve_questions))
+        .route("/v1/get_live_output", post(get_live_code_output));
 
     let page_routes = Router::new()
         .route("/question/:id", get(serve_question));
