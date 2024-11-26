@@ -1,12 +1,16 @@
 use axum::{Router, routing::{get, post,options},
     extract::{Json, Path},
+    extract::ws::{WebSocketUpgrade, WebSocket, Message},
     response::{Response, Html},
     http::StatusCode, body::Body};
 use serde::{Serialize, Deserialize};
 use tower_http::services::ServeDir;
 use tower_http::cors::{CorsLayer, Any};
 use http::Method;
+use std::sync::mpsc::{channel, Sender};
+use std::io::Write;
 // use mongodb::bson::{doc, Document};
+// use std::sync::mpsc::channel;
 // use mongodb::Client;
 // use serde_json::to_string_pretty;
 
@@ -15,6 +19,8 @@ use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
 use crate::web_server::utils::temp_utils;
 
+use crate::poller::poller;
+use poller::StdinData;
 
 
 static DATABASE_NAME: &str = "coapidb";
@@ -51,7 +57,66 @@ pub struct GetQuestion {
     question_id: String,
 }
 
-async fn get_live_code_output(Json(json_request): Json<CodeRequest>) -> Response {
+fn poll_live_output(filename: String, sender: Sender<StdinData>) {
+    let (tx, rx) = channel();
+
+    let txclone = tx.clone();
+    let t1 = std::thread::spawn(move || {
+        let _ = poller::live_read_stdin("python3".to_string(), vec![filename], txclone);
+    });
+    let mut stdout = std::io::stdout().lock();
+ 
+    while let Ok(stdin_data) = rx.recv() {
+        match stdin_data {
+            StdinData::Available(char) => {
+                print!("{}", String::from_utf8(vec![char]).unwrap());
+                sender.send(StdinData::Available(char)).unwrap();
+                stdout.flush().unwrap();
+            },
+            StdinData::StdinSender(poll_sender) => {
+                let sender_clone = sender.clone();
+                std::thread::spawn(move || {
+                    let (transmitter, receiver) = channel();
+                    sender_clone.send(StdinData::StdinSender(transmitter.clone())).unwrap();
+                    while let Ok(data) = receiver.recv() {
+                        poll_sender.send(data).unwrap();
+                    }
+                });
+            },
+            StdinData::Over => break,
+         }
+     }
+     t1.join().unwrap();
+}
+
+async fn live_code_ws_handler(socket: WebSocketUpgrade) -> Response {
+    socket.on_upgrade(live_code_ws)
+}
+
+async fn live_code_ws(mut socket: WebSocket) {
+    while let Some(msg) = socket.recv().await {
+        let msg = if let Ok(msg) = msg {
+            msg
+        } else {
+            return;
+        };
+        println!("got request: {}", msg.to_text().unwrap());
+        let code_req =  serde_json::from_str::<CodeRequest>(msg.to_text().unwrap());
+
+        if let Ok(code_req) = code_req {
+            println!("code: {}\nlanguage: {}", code_req.code, code_req.language);
+
+            if socket.send(Message::Text("Hello World!".to_string())).await.is_err() {
+                return;
+            }
+        } else {
+            println!("{} is not deserializable!", msg.to_text().unwrap());
+        }
+
+    }
+}
+
+fn get_live_code_output(json_request: CodeRequest) -> Response {
     println!("received request: {:?}", serde_json::to_string_pretty(&json_request).unwrap());
     let code = json_request.code;
     let temp_folder_format = "./live-code/pyenv-XXXX";
@@ -75,6 +140,8 @@ async fn get_live_code_output(Json(json_request): Json<CodeRequest>) -> Response
 
     return response;
 } 
+
+// TODO: Create a structure of functions with single db connection.
 
 async fn serve_question(Path(question_id): Path<String>) -> Html <String> {
     let client = mongo_funcs::connect("mongodb://localhost:27017").await;
@@ -159,17 +226,19 @@ pub async fn code_output_api(addr: &str) {
         .route("/v1", post(get_code_output))
         .route("/v1", options(preflight_response))
         .route("/v1/create_question", post(insert_question))
-        .route("/v1/get_questions", get(serve_questions))
-        .route("/v1/get_live_output", post(get_live_code_output));
+        .route("/v1/get_questions", get(serve_questions));
+
+    let websocket_routes = Router::new()
+        .route("/get_live_output", get(live_code_ws_handler));
 
     let page_routes = Router::new()
         .route("/question/:id", get(serve_question));
-
 
     let app = Router::new()
         .nest_service("/", ServeDir::new("coapi-frontend"))
         .nest("/api", api_routes)
         .nest("/pages", page_routes)
+        .nest("/ws", websocket_routes)
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
