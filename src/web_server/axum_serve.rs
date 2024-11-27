@@ -99,7 +99,7 @@ async fn live_code_ws_handler(socket: WebSocketUpgrade) -> Response {
 async fn live_code_ws(socket: WebSocket) {
     let (tx, rx) = channel();
     let (mut ws_sender, mut ws_receiver) = socket.split();
-    let (socket_sender, mut socket_receiver) = mpsc::channel::<String>(32);
+    let (socket_sender, mut socket_receiver) = mpsc::channel::<String>(1);
     let poll_output  = if let Some(Ok(Message::Text(msg))) = ws_receiver.next().await {
         println!("got request: {}", msg.clone());
         let code_req =  serde_json::from_str::<CodeRequest>(&msg);
