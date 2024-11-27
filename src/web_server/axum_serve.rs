@@ -9,6 +9,9 @@ use tower_http::cors::{CorsLayer, Any};
 use http::Method;
 use std::sync::mpsc::{channel, Sender};
 use std::io::Write;
+use tokio::{sync::mpsc, spawn};
+use futures::{SinkExt, StreamExt};
+
 // use mongodb::bson::{doc, Document};
 // use std::sync::mpsc::channel;
 // use mongodb::Client;
@@ -83,7 +86,7 @@ fn poll_live_output(filename: String, sender: Sender<StdinData>) {
                     }
                 });
             },
-            StdinData::Over => break,
+            StdinData::Over => return,
          }
      }
      t1.join().unwrap();
@@ -93,30 +96,69 @@ async fn live_code_ws_handler(socket: WebSocketUpgrade) -> Response {
     socket.on_upgrade(live_code_ws)
 }
 
-async fn live_code_ws(mut socket: WebSocket) {
-    while let Some(msg) = socket.recv().await {
-        let msg = if let Ok(msg) = msg {
-            msg
-        } else {
-            return;
-        };
-        println!("got request: {}", msg.to_text().unwrap());
-        let code_req =  serde_json::from_str::<CodeRequest>(msg.to_text().unwrap());
+async fn live_code_ws(socket: WebSocket) {
+    let (tx, rx) = channel();
+    let (mut ws_sender, mut ws_receiver) = socket.split();
+    let (socket_sender, mut socket_receiver) = mpsc::channel::<String>(32);
+    let poll_output  = if let Some(Ok(Message::Text(msg))) = ws_receiver.next().await {
+        println!("got request: {}", msg.clone());
+        let code_req =  serde_json::from_str::<CodeRequest>(&msg);
 
         if let Ok(code_req) = code_req {
             println!("code: {}\nlanguage: {}", code_req.code, code_req.language);
+            
+            let code = code_req.code;
+            let temp_folder_format = "./live-code/pyenv-XXXX";
+            let temp_folder = temp_utils::create_temp_dir(temp_folder_format).unwrap().trim().to_string();
+            let file_path = temp_folder.clone() + "/main.py";
+            temp_utils::create_temp_file(&(temp_folder + "/main.py"));
+            std::fs::write(file_path.clone(), code.as_bytes()).expect("ERROR WRITING TO FILE.");
 
-            if socket.send(Message::Text("Hello World!".to_string())).await.is_err() {
-                return;
-            }
+            std::thread::spawn(move || poll_live_output(file_path, tx.clone()));
+            rx.recv()
         } else {
-            println!("{} is not deserializable!", msg.to_text().unwrap());
+            println!("{} is not deserializable!", msg);
+            return;
         }
+    } else {
+        return;
+    };
+    if let Ok(StdinData::StdinSender(stdin_sender)) = poll_output {
+        let send_task = spawn(async move {
+            while let Some(msg) = socket_receiver.recv().await {
+               if ws_sender.send(Message::Text(msg)).await.is_err() {
+                   println!("Failed to send message. Socket closed.");
+                   break;
+               }
+            }
+        });
 
+        tokio::spawn(async move {
+            while let Ok(data) = rx.recv(){
+                match data {
+                    StdinData::Available(char) => {
+                        let char = String::from_utf8(vec![char]).unwrap();
+                        socket_sender.send(char).await.unwrap();
+                    },
+                    StdinData::StdinSender(_) => {}, 
+                    StdinData::Over => break
+                }
+            }
+        });
+
+        let recv_task = spawn(async move {
+            while let Some(Ok(Message::Text(text))) = ws_receiver.next().await {
+                stdin_sender.send(text).unwrap();
+            }
+        });
+        tokio::select! {
+            _ = recv_task => println!("recv task over!"),
+            _ = send_task => println!("send task over!"),
+        }
     }
 }
 
-fn get_live_code_output(json_request: CodeRequest) -> Response {
+fn _get_live_code_output(json_request: CodeRequest) -> Response {
     println!("received request: {:?}", serde_json::to_string_pretty(&json_request).unwrap());
     let code = json_request.code;
     let temp_folder_format = "./live-code/pyenv-XXXX";
