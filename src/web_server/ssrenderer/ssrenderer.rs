@@ -56,11 +56,15 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
   </head>
 
   <body>
-      <h1><code class="main_title">CO-IDE<b class="cursor">▊</b></code></h1>
+  <div class="lcontainer">
+      <div class="header">
+          <h1><code class="main_title">CO-IDE<b class="cursor">▊</b></code></h1>
+      </div>
       <div class="left">
       <div class="question_container">
       {question_html}
       </div>
+  </div>
   </div>
       <div class="right">
            <div class="container">
@@ -83,7 +87,6 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
      </div>
 
      </div>
-
 
      <div class="footer">
     <p>
