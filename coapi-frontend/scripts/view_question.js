@@ -9,7 +9,6 @@ function update_output(text) {
 run_button.onclick = () => {
   const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
 
-
   socket.addEventListener("open", (_event) => {
     const codeBox = document.querySelector(".codebox");
 
