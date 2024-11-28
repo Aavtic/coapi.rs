@@ -10,7 +10,7 @@ use http::Method;
 use std::sync::mpsc::{channel, Sender};
 use std::io::Write;
 use tokio::{sync::mpsc, spawn};
-use futures::{SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt, TryFutureExt};
 
 // use mongodb::bson::{doc, Document};
 // use std::sync::mpsc::channel;
@@ -24,6 +24,7 @@ use crate::web_server::utils::temp_utils;
 
 use crate::poller::poller;
 use poller::StdinData;
+use poller::StdinDataStatus;
 
 
 static DATABASE_NAME: &str = "coapidb";
@@ -63,30 +64,38 @@ pub struct GetQuestion {
 fn poll_live_output(filename: String, sender: Sender<StdinData>) {
     let (tx, rx) = channel();
 
-    let txclone = tx.clone();
     let t1 = std::thread::spawn(move || {
-        let _ = poller::live_read_stdin("python3".to_string(), vec![filename], txclone);
+        let _ = poller::live_read_stdin("python3".to_string(), vec![filename], tx);
     });
-    let mut stdout = std::io::stdout().lock();
+    // std::io::stdout().lock();
  
     while let Ok(stdin_data) = rx.recv() {
         match stdin_data {
             StdinData::Available(char) => {
                 print!("{}", String::from_utf8(vec![char]).unwrap());
                 sender.send(StdinData::Available(char)).unwrap();
-                stdout.flush().unwrap();
+                std::io::stdout().flush().unwrap();
             },
             StdinData::StdinSender(poll_sender) => {
                 let sender_clone = sender.clone();
                 std::thread::spawn(move || {
                     let (transmitter, receiver) = channel();
                     sender_clone.send(StdinData::StdinSender(transmitter.clone())).unwrap();
+                    
                     while let Ok(data) = receiver.recv() {
-                        poll_sender.send(data).unwrap();
+                        println!("received data");
+                        if poll_sender.send(data).is_err() {
+                            let _ = sender_clone.send(StdinData::Over);
+                            return;
+                        }
                     }
                 });
             },
-            StdinData::Over => return,
+            StdinData::Over => {
+                println!("Execution Complete");
+                let _ = sender.send(StdinData::Over);
+                return;
+            },
          }
      }
      t1.join().unwrap();
@@ -99,8 +108,8 @@ async fn live_code_ws_handler(socket: WebSocketUpgrade) -> Response {
 async fn live_code_ws(socket: WebSocket) {
     let (tx, rx) = channel();
     let (mut ws_sender, mut ws_receiver) = socket.split();
-    let (socket_sender, mut socket_receiver) = mpsc::channel::<String>(1);
-    let poll_output  = if let Some(Ok(Message::Text(msg))) = ws_receiver.next().await {
+    let (socket_sender, mut socket_receiver) = mpsc::channel::<StdinDataStatus>(1);
+    let poll_output = if let Some(Ok(Message::Text(msg))) = ws_receiver.next().await {
         println!("got request: {}", msg.clone());
         let code_req =  serde_json::from_str::<CodeRequest>(&msg);
 
@@ -124,36 +133,66 @@ async fn live_code_ws(socket: WebSocket) {
         return;
     };
     if let Ok(StdinData::StdinSender(stdin_sender)) = poll_output {
-        let send_task = spawn(async move {
-            while let Some(msg) = socket_receiver.recv().await {
-               if ws_sender.send(Message::Text(msg)).await.is_err() {
-                   println!("Failed to send message. Socket closed.");
-                   break;
-               }
-            }
-        });
 
-        tokio::spawn(async move {
+        let output_task = tokio::spawn(async move {
             while let Ok(data) = rx.recv(){
                 match data {
                     StdinData::Available(char) => {
                         let char = String::from_utf8(vec![char]).unwrap();
-                        socket_sender.send(char).await.unwrap();
+                        socket_sender.send(StdinDataStatus::Data(char)).await.unwrap();
                     },
                     StdinData::StdinSender(_) => {}, 
-                    StdinData::Over => break
+                    StdinData::Over => {
+                        println!("RECEVED OVER");
+                        socket_sender.send(StdinDataStatus::Over).await.unwrap();
+
+                        return;
+                    }
+                }
+            }
+        });
+
+        let send_task = spawn(async move {
+            while let Some(msg) = socket_receiver.recv().await {
+                match msg {
+                    StdinDataStatus::Data(msg) => {
+                        if ws_sender.send(Message::Text(msg)).await.is_err() {
+                            println!("Failed to send message. Socket closed.");
+                            return;
+                        }
+                    },
+                    StdinDataStatus::Over => {
+                        println!("Closing the connection...");
+                        if let Err(e) = ws_sender.send(Message::Close(None)).await {
+                            println!("Failed to send close frame: {:?}", e);
+                        }
+
+                        drop(ws_sender);
+                        return;
+                    }
                 }
             }
         });
 
         let recv_task = spawn(async move {
-            while let Some(Ok(Message::Text(text))) = ws_receiver.next().await {
-                stdin_sender.send(text).unwrap();
+            while let Some(msg) = ws_receiver.next().await {
+                if msg.is_ok() {
+                    let msg = msg.unwrap().to_text().unwrap().to_string() + "\n";
+                    println!("got msg {}", msg.clone());
+                    if stdin_sender.send(StdinDataStatus::Data(msg.clone())).is_err() {
+                        println!("Can't send");
+                        return
+                    }
+                } else {
+                    let _ = stdin_sender.send(StdinDataStatus::Over);
+                    return;
+                }
             }
         });
         tokio::select! {
-            _ = recv_task => println!("recv task over!"),
-            _ = send_task => println!("send task over!"),
+            _ = recv_task => println!("recv  task over"),
+            _ = send_task => println!("send task over"),
+            _ = output_task => println!("output task over"),
         }
     }
 }
@@ -221,7 +260,6 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
         .body(Body::from("Database Updated"))
         .unwrap();
 }
-
 
 async fn get_code_output(Json(json_request): Json<CodeRequest>) -> Response {
     let code = json_request.code;
