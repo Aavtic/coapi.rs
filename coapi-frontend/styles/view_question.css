@@ -109,5 +109,10 @@ h1 {
 }
 
 .outputext {
+    white-space: pre-wrap; /* Standard approach for modern browsers */
+    word-wrap: break-word; /* Ensures long words break */
+}
 
+#output_cursor {
+    display: inline; /* Cursor appears inline after the last character */
 }
