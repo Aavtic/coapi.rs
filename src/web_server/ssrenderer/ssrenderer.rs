@@ -78,14 +78,11 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
      </button>
 
      </div>
-
-     <div class="output">
+     <div class="output" id="inneroutput" tabindex="0">
          <h2 class="output-text"></h2>
-         <p class="outputext">
+         <div id="output_cursor"><pre id="outputext" class="outputext"><span class="cursor">▊</span></pre></div>
          <h3 class="statustext"></h3>
-         </p>
      </div>
-
      </div>
 
      <div class="footer">
@@ -94,7 +91,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
     </p>
     </div>
       </div>
-    <script src="http://127.0.0.1:8081/scripts/view_question.js"></script>
+    <script src="http://127.0.0.1:8081/scripts/coide.js"></script>
   </body></html>
 "#, title=title, question_html=question_html);
     return Html::from(html_document);
