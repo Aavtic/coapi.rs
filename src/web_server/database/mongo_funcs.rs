@@ -35,9 +35,9 @@ struct PersonDetails {
     age: u16,
 }
 
-pub async fn get_question(client: &Client, db_name: &str, coll_name: &str, questionId: String) -> Option<DbAddQuestion> {
+pub async fn get_question(client: &Client, db_name: &str, coll_name: &str, questionid: String) -> Option<DbAddQuestion> {
     let collection = client.database(db_name).collection::<DbAddQuestion>(coll_name);
-    let result = collection.find_one(doc! {"uuid": questionId}).await.unwrap();
+    let result = collection.find_one(doc! {"uuid": questionid}).await.unwrap();
 
     if let Some(res) = result {
         return Some(res)
