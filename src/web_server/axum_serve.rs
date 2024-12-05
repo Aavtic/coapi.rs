@@ -10,7 +10,7 @@ use http::Method;
 use std::sync::mpsc::{channel, Sender};
 use std::io::Write;
 use tokio::{sync::mpsc, spawn};
-use futures::{SinkExt, StreamExt, TryFutureExt};
+use futures::{SinkExt, StreamExt};
 
 // use mongodb::bson::{doc, Document};
 // use std::sync::mpsc::channel;
@@ -22,6 +22,9 @@ use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
 use crate::web_server::utils::temp_utils;
 
+use crate::web_server::utils::communications;
+use communications::WSBuffer;
+
 use crate::poller::poller;
 use poller::StdinData;
 use poller::StdinDataStatus;
@@ -29,6 +32,8 @@ use poller::StdinDataStatus;
 
 static DATABASE_NAME: &str = "coapidb";
 static QUESTIONS_COLLECTION_NAME: &str = "questions";
+
+const WEBSOCKET_BUFFER_SIZE: usize = 64;
 
 
 #[derive(Serialize, Deserialize)]
@@ -61,11 +66,18 @@ pub struct GetQuestion {
     question_id: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct WSCodeResponse {
+    character: char,
+    over: bool,
+    exit_status: usize,
+}
+
 fn poll_live_output(filename: String, sender: Sender<StdinData>) {
     let (tx, rx) = channel();
 
     let t1 = std::thread::spawn(move || {
-        let _ = poller::live_read_stdin("python3".to_string(), vec![filename], tx);
+        let _ = poller::live_read_stdin("python3".to_string(), vec![filename, "2>&1".to_string()], tx);
     });
     // std::io::stdout().lock();
  
@@ -85,15 +97,15 @@ fn poll_live_output(filename: String, sender: Sender<StdinData>) {
                     while let Ok(data) = receiver.recv() {
                         println!("received data");
                         if poll_sender.send(data).is_err() {
-                            let _ = sender_clone.send(StdinData::Over);
+                            let _ = sender_clone.send(StdinData::Over(-1));
                             return;
                         }
                     }
                 });
             },
-            StdinData::Over => {
+            StdinData::Over(code) => {
                 println!("Execution Complete");
-                let _ = sender.send(StdinData::Over);
+                let _ = sender.send(StdinData::Over(code));
                 return;
             },
          }
@@ -142,10 +154,9 @@ async fn live_code_ws(socket: WebSocket) {
                         socket_sender.send(StdinDataStatus::Data(char)).await.unwrap();
                     },
                     StdinData::StdinSender(_) => {}, 
-                    StdinData::Over => {
+                    StdinData::Over(code) => {
                         println!("RECEVED OVER");
-                        socket_sender.send(StdinDataStatus::Over).await.unwrap();
-
+                        socket_sender.send(StdinDataStatus::Over(code)).await.unwrap();
                         return;
                     }
                 }
@@ -156,13 +167,39 @@ async fn live_code_ws(socket: WebSocket) {
             while let Some(msg) = socket_receiver.recv().await {
                 match msg {
                     StdinDataStatus::Data(msg) => {
-                        if ws_sender.send(Message::Text(msg)).await.is_err() {
-                            println!("Failed to send message. Socket closed.");
-                            return;
+                        let code_resp = WSCodeResponse {
+                            character: msg.chars().take(1).next().unwrap(),
+                            over: false,
+                            exit_status: 69, 
+                        };
+                        let res = serde_json::to_string(&code_resp).unwrap();
+                        let socket_msg = res.to_ws_buffers(WEBSOCKET_BUFFER_SIZE);
+
+                        for message in socket_msg {
+                            if ws_sender.send(Message::Text(message)).await.is_err() {
+                                println!("Failed to send message. Socket closed.");
+                                return;
+                            }
                         }
                     },
-                    StdinDataStatus::Over => {
+
+                    StdinDataStatus::Over(code) => {
                         println!("Closing the connection...");
+                        let code_resp = WSCodeResponse {
+                            character: "\n".to_string().chars().take(1).next().unwrap(),
+                            over: true,
+                            exit_status: code as usize, 
+                        };
+                        let res = serde_json::to_string(&code_resp).unwrap();
+                        let socket_msg = res.to_ws_buffers(WEBSOCKET_BUFFER_SIZE);
+
+                        for message in socket_msg {
+                            if ws_sender.send(Message::Text(message)).await.is_err() {
+                                println!("Failed to send message. Socket closed.");
+                                return;
+                            }
+                        }
+
                         if let Err(e) = ws_sender.send(Message::Close(None)).await {
                             println!("Failed to send close frame: {:?}", e);
                         }
@@ -184,7 +221,7 @@ async fn live_code_ws(socket: WebSocket) {
                         return
                     }
                 } else {
-                    let _ = stdin_sender.send(StdinDataStatus::Over);
+                    let _ = stdin_sender.send(StdinDataStatus::Over(-1));
                     return;
                 }
             }
@@ -297,7 +334,7 @@ async fn preflight_response() -> Response {
 }
 
 #[tokio::main]
-pub async fn code_output_api(addr: &str) { 
+pub async fn code_output_api(addr: &str) {
     let cors = CorsLayer::new()
         .allow_origin(Any) // Allow requests from any origin, for development purposes
         .allow_methods([Method::POST, Method::OPTIONS]);
