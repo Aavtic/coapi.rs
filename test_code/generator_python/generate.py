@@ -14,11 +14,15 @@ parser.add_argument("--details", required=True, help="store JSON details of ques
 
 # <question-id>/qnsettings.conf
 # {
+#         "title": "",
+#         "description": "",
 #         "function_name": factorial,
 #         "input_output": {
 #             "5": 120,
 #             "3": 6,
 #         },
+#         "input_type": "int",
+#         "output_type": "int",
 # }
 
 
@@ -44,8 +48,11 @@ parser.add_argument("--details", required=True, help="store JSON details of ques
 
 # Sample Input 1
 # {
+#         "title": "Factorial",
+#         "description": "Factorial is ..",
 #         "question_id": id,
 #         "function_name": "factorial",
+#         "argument_name": "n",
 #         "input_output": {
 #             "5": 120,
 #             "3": 6,
@@ -55,6 +62,8 @@ parser.add_argument("--details", required=True, help="store JSON details of ques
 # }
 #
 # {
+#         "title": "",
+#         "description": "",
 #         "question_id": id,
 #         "function_name": "gen_range",
 #         "input_output": {
@@ -79,7 +88,7 @@ class Generator:
         self.default_code_style = """# COIDE: https://github.com/aavtic/coapi.rs
 
 class Solution:
-    def {function_name}():
+    def {function_name}(self, ):
         # Write your code here..."""
 
         self.folder_path = f"{WORKING_DIRECTORY_ROOT}/question_blueprints/{self.question_id}/"
@@ -109,6 +118,7 @@ class Solution:
             self.parsed = json.loads(self.details)
         except Exception as e:
             raise e
+
 
 if __name__ == "__main__":
     opts = parser.parse_args()
