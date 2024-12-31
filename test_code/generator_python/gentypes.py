@@ -62,17 +62,19 @@ class GenTypes:
         self.parsed = json.loads(self.contents)
         input_output = self.parsed["input_output"]
         input_type_str = self.parsed["input_type"]
-        output_type_str = self.parsed["output_type"]
+        # output_type_str = self.parsed["output_type"]
         input_output_res = []
 
         for input in input_output:
             try:
                 self.input_type = get_checked_type(input, input_type_str)
-                self.output_type = get_checked_type(input_output[input], output_type_str)
+                print(self.input_type, type(self.input_type), input_output[input], type(input_output[input]))
+                # self.output_type = get_checked_type(input_output[input], output_type_str)
+                # print(self.output_type)
             except Exception as e:
                 raise e
 
-            input_output_res.append((self.input_type, self.output_type))
+            input_output_res.append((self.input_type, input_output[input]))
 
         return input_output_res
 
