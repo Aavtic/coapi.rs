@@ -81,6 +81,7 @@ class Generator:
         self.parse_details()
         self.question_id = self.parsed["question_id"]
         self.function_name = self.parsed["function_name"]
+        self.argument_name = self.parsed["argument_name"]
         self.input_output = self.parsed["input_output"]
         self.input_type = self.parsed["input_type"]
         self.output_type = self.parsed["output_type"]
@@ -88,7 +89,7 @@ class Generator:
         self.default_code_style = """# COIDE: https://github.com/aavtic/coapi.rs
 
 class Solution:
-    def {function_name}(self, ):
+    def {function_name}(self{argument_name}) -> {output_type}:
         # Write your code here..."""
 
         self.folder_path = f"{WORKING_DIRECTORY_ROOT}/question_blueprints/{self.question_id}/"
@@ -97,7 +98,9 @@ class Solution:
 
     def generate(self):
         self.create_dir_qnid()
-        formatted_code = self.default_code_style.format(function_name=self.function_name)
+        formatted_code = self.default_code_style.format(function_name=self.function_name, 
+                                                        argument_name = f", {self.argument_name}: {self.input_type}" if self.argument_name else "",
+                                                        output_type = self.output_type)
         code_file_path = self.folder_path + "main.py"
         self.create_write_file(formatted_code, code_file_path)
         config_path = self.folder_path + "qnconfig.json"
