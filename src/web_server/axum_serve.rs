@@ -54,11 +54,26 @@ pub struct ExpectedInputOutput {
     output: String,
 }
 
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Types {
+    Int,
+    Float,
+    Bool,
+    String,
+    VecInt,
+    VecFloat,
+    VecBool,
+    VecString,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AddQuestion {
     pub title: String,
     pub description: String,
-    pub data: Vec<ExpectedInputOutput>
+    pub data: Vec<ExpectedInputOutput>,
+    pub input_type: Types,
+    pub output_type: Types,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -284,13 +299,16 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
     let title =  &question_request.title;
     let description = &question_request.description;
     let data = &question_request.data;
+    let input_type = &question_request.input_type;
+    let output_type = &question_request.output_type;
 
     let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
-    mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
-
-    println!("{}\n{}\n{:?}", title, description, data);
+    let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
+    println!("{}\n{}\n{:?}, {:?}, {:?}", title, description, data, input_type, output_type);
     println!("Database updated!");
+
+    let uuid = res.uuid;
 
     return Response::builder()
         .status(StatusCode::OK)
