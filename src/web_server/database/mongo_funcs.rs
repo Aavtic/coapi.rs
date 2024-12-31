@@ -62,7 +62,7 @@ pub async fn create_collection(client: &Client, db_name: &str, coll_name: &str) 
     db.create_collection(coll_name).await.unwrap();
 }
 
-pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &AddQuestion) {
+pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &AddQuestion) -> DbAddQuestion {
     let coll = client.database(db_name).collection::<DbAddQuestion>(coll_name);
     let doc_data = &doc.data;
     let db_update = DbAddQuestion {
@@ -72,7 +72,8 @@ pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, do
         uuid: Uuid::new_v4().to_string(),
     };
 
-    coll.insert_one(db_update).await.unwrap();
+    coll.insert_one(db_update.clone()).await.unwrap();
+    return db_update;
 }
 
 pub async fn find_document(client: &Client, db_name: &str, coll_name: &str, filter: Document) {
