@@ -1,7 +1,9 @@
+<!DOCTYPE html>
 <html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <title>Python Problem creation</title>
-    <link rel="stylesheet" href="styles/create_problem.css">
+    <link rel="stylesheet" href="create_question_files/create_problem.css">
   </head>
 
   <body>
@@ -21,26 +23,57 @@
         <br><br>
 
          <div id="output-container">
+    <div>
+        <label for="argument1">Argument 1:</label>
+        <textarea id="argument-1" name="argument" rows="3" placeholder="Enter the argument" required=""></textarea>
+        <select class="label_class" name="type1" id="type1">
+            <option value="int" selected="selected">int</option>
+            <option value="bool">bool</option>
+            <option value="str">str</option>
+            <option value="list_str">List[str]</option>
+            <option value="list_int">List[int]</option>
+            <option value="list_float">List[float]</option>
+            <option value="list_bool">List[bool]</option>
+        </select>
+    </div>
 
-            <label for="argument1">Argument 1:</label>
-            <textarea id="arugment-1" name="argument" rows="3" placeholder="Enter the argument" required=""></textarea>
-            
-            <label for="output-1">Expected Output 1:</label>
-            <textarea id="expected-output1" name="expected-output" rows="3" placeholder="Enter the expected output" required=""></textarea>
+    <div>
+        <label for="output-1">Expected Output 1:</label>
+        <textarea id="expected-output1" name="expected-output" rows="3" placeholder="Enter the expected output" required=""></textarea>
+        <select class="label_class" name="type1" id="type1">
+            <option value="int" selected="selected">int</option>
+            <option value="bool">bool</option>
+            <option value="str">str</option>
+            <option value="list_str">List[str]</option>
+            <option value="list_int">List[int]</option>
+            <option value="list_float">List[float]</option>
+            <option value="list_bool">List[bool]</option>
+        </select>
+    </div>
 
+    <div>
+        <label for="argument2">Argument 2:</label>
+        <textarea id="argument-2" name="argument" rows="3" placeholder="Enter the argument" required=""></textarea>
+    </div>
 
-        </div>
+    <div>
+        <label for="output-2">Expected Output 2:</label>
+        <textarea id="expected-output2" name="expected-output" rows="3" placeholder="Enter the expected output" required=""></textarea>
+    </div>
+</div>
+
         <button class="add_button" type="button">Add</button>
 
         <br><br>
 
         <!-- Submit Button -->
-        <button class="submit_button" type="submit">Submit</button>
+        <button class="submit_button" type="button">Submit</button>
 
       </form>
 
     <div id="notification" class="notification">Question submitted successfully!</div>
-    <script src="./scripts/create_question.js"></script>
+    <script src="scripts/create_question.js"></script>
   
 
-  </body></html>
+  
+</body></html>
