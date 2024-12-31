@@ -16,6 +16,7 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 # {
 #         "question_id": "lksjdfalskjf",
 #         "filepath": ""
+# }
 
 
 # LOAD <question-id>/qndetails.json
@@ -43,7 +44,7 @@ class Pass:
     pass
 
 
-class Fail:
+class Fail(Exception):
     def __init__(self, expected, got):
         self.expected = expected
         self.got = got
@@ -55,7 +56,6 @@ class Runner:
         self.parse_details(self.details)
         self.code_file = self.parsed["filepath"]
         self.question_id = self.parsed["question_id"]
-        self.function_name = self.parsed["function_name"]
         self.question_settings = WORKING_DIRECTORY_ROOT + "/question_blueprints/" + self.question_id + "/qnconfig.json"
 
         self.run()
@@ -66,7 +66,7 @@ class Runner:
         function_name = gtypes.get_function_name()
 
         directory, filename = os.path.split(self.code_file)
-        module = os.path.splitext(filename)
+        module = os.path.splitext(filename)[0]
 
         sys.path.append(directory)
 
@@ -75,15 +75,14 @@ class Runner:
         spec.loader.exec_module(module)
 
         solution_instance = module.Solution()
-        function = getattr(solution_instance, self.function_name)
-
-        no_test_cases = len(input_output)
+        function = getattr(solution_instance, function_name)
 
         # ASSUMING INPUT MUST BE UNIQUE
-        cases = {i: None for i in input_output}
+        cases = {i[0]: None for i in input_output}
 
         for (input, output) in input_output:
             try:
+                print(input, type(input))
                 result = function(input)
             except:
                 raise URCodeErrorLOL
@@ -92,8 +91,9 @@ class Runner:
                 cases[input] = Pass
             else:
                 fail = Fail(output, result)
-                raise Fail
+                raise fail
 
+        print(cases)
 
     def parse_details(self, data: str):
         try:
@@ -104,5 +104,5 @@ class Runner:
 
 if __name__ == "__main__":
     opts = parser.parse_args()
-    details = opts.details
+    details = opts.question_details
     Runner(details)
