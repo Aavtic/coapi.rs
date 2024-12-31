@@ -18,6 +18,11 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 #         "filepath": ""
 # }
 
+# OUTPUT
+
+{
+        "status": Pass | Fail | URCodeErrorLOL | URCodeDontReturnAnything
+}
 
 # LOAD <question-id>/qndetails.json
 # import pyl23k4j/main.py as code
@@ -41,6 +46,10 @@ class URCodeErrorLOL(Exception):
 
 
 class Pass:
+    pass
+
+
+class URCodeDontReturnAnything(Exception):
     pass
 
 
@@ -70,7 +79,9 @@ class Runner:
 
         sys.path.append(directory)
 
+        print(module, self.code_file)
         spec = importlib.util.spec_from_file_location(module, self.code_file)
+        print(spec)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
@@ -87,6 +98,8 @@ class Runner:
             except:
                 raise URCodeErrorLOL
 
+            if (result is None) and output:
+                raise URCodeErrorLOL
             if result == output:
                 cases[input] = Pass
             else:
