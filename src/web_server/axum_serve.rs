@@ -96,6 +96,17 @@ pub struct AddQuestion {
     pub output_type: Types,
 }
 
+pub struct DBAddQuestion {
+    pub title: String,
+    pub description: String,
+    pub data: Vec<ExpectedInputOutput>,
+    pub function_name: String,
+    pub input_name: String,
+    pub input_type: Types,
+    pub output_type: Types,
+    pub question_template: String,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetQuestion {
     question_id: String,
@@ -323,12 +334,8 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
     let input_type = &question_request.input_type;
     let output_type = &question_request.output_type;
 
-    let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
-    let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
-    let uuid = res.uuid;
-
-    println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}, {uuid}", title, description, data, input_type, output_type, function_name, argument_name);
+    println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}", title, description, data, input_type, output_type, function_name, argument_name);
     println!("Database updated!");
 
     let geninput = GenInput {
@@ -341,10 +348,15 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
         function_name: function_name.to_string(),
         argument_name: argument_name.to_string(),
     };
+    let res = generate_python_binding::bind_gen_python(geninput);
+    let uuid = res.uuid;
 
-    let status = generate_python_binding::bind_gen_python(geninput);
 
-    if status.success() {
+    if let (gen_code) = res {
+        let client = mongo_funcs::connect("mongodb://localhost:27017").await;
+
+        let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
+
         return Response::builder()
             .status(StatusCode::OK)
             .body(Body::from("Database Updated"))
