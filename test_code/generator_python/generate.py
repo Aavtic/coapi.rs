@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import argparse
 
@@ -34,8 +35,6 @@ parser.add_argument("--details", required=True, help="store JSON details of ques
 
 # Runner.py
 # look into <question-id>/qnsettings.conf
-
-
 
 # Supported Types:
 #     int,
@@ -94,7 +93,9 @@ class Solution:
 
         self.folder_path = f"{WORKING_DIRECTORY_ROOT}/question_blueprints/{self.question_id}/"
 
-        self.generate()
+        generated_code = self.generate()
+        sys.stdout.write(generated_code)
+        sys.exit(0)
 
     def generate(self):
         self.create_dir_qnid()
@@ -105,6 +106,8 @@ class Solution:
         self.create_write_file(formatted_code, code_file_path)
         config_path = self.folder_path + "qnconfig.json"
         self.create_write_file(self.details, config_path)
+
+        return formatted_code
 
     def create_dir_qnid(self):
         try:
