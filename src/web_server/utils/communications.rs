@@ -1,3 +1,6 @@
+use serde::{Serialize, Deserialize};
+
+
 pub trait WSBuffer {
      fn to_ws_buffers(&self, bufsize: usize) -> Vec<String>;
  }
@@ -28,3 +31,19 @@ impl WSBuffer for String {
     }
 }
 
+//  "status": Pass | Fail {ex: String, got: String} | URCodeErrorLOL | URCodeDontReturnAnything
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Status {
+    Pass,
+    Fail(Fail),
+    Cooked,
+    URCodeErrorLOL,
+    URCodeDontReturn,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Fail {
+    ex: String,
+    got: String,
+}
