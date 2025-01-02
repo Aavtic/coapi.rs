@@ -20,9 +20,9 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 
 # OUTPUT
 
-{
-        "status": Pass | Fail | URCodeErrorLOL | URCodeDontReturnAnything
-}
+# {
+#         "status": Pass | Fail | URCodeErrorLOL | URCodeDontReturnAnything | Cooked
+# }
 
 # LOAD <question-id>/qndetails.json
 # import pyl23k4j/main.py as code
@@ -42,21 +42,32 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 
 
 class URCodeErrorLOL(Exception):
-    pass
+    def to_string(self):
+        return '{"status": "URCodeErrorLOL"}'
 
 
 class Pass:
-    pass
+    def to_string(self):
+        return '{"status": "Pass"}'
+
+
+class Cooked:
+    def to_string(self):
+        return '{"status": "Cooked"}'
 
 
 class URCodeDontReturnAnything(Exception):
-    pass
+    def to_string(self):
+        return '{"status": "URCodeDontReturnAnything"}'
 
 
 class Fail(Exception):
     def __init__(self, expected, got):
         self.expected = expected
         self.got = got
+
+    def to_string(self):
+        return f'{"status": "Fail: {"ex": {self.expected}, "got": {self.expected}}"}'
 
 
 class Runner:
@@ -96,15 +107,18 @@ class Runner:
                 print(input, type(input))
                 result = function(input)
             except:
-                raise URCodeErrorLOL
+                error = URCodeErrorLOL().to_string()
+                sys.stdout.write(error)
+                sys.exit(0)
 
             if (result is None) and output:
-                raise URCodeErrorLOL
+                sys.stdout.write(URCodeErrorLOL().to_string())
+                sys.exit(0)
             if result == output:
                 cases[input] = Pass
             else:
                 fail = Fail(output, result)
-                raise fail
+                sys.stdout.write(fail.to_string())
 
         print(cases)
 
@@ -112,7 +126,9 @@ class Runner:
         try:
             self.parsed = json.loads(data)
         except Exception as e:
-            raise e
+            cooked = Cooked()
+            sys.stdout.write(cooked)
+            sys.exit(0)
 
 
 if __name__ == "__main__":
