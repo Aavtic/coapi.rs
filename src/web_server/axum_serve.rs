@@ -22,6 +22,9 @@ use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
 use crate::web_server::utils::temp_utils;
 
+use crate::web_server::utils::generate_python_binding;
+use generate_python_binding::GenInput;
+
 use crate::web_server::utils::communications;
 use communications::WSBuffer;
 
@@ -67,11 +70,28 @@ pub enum Types {
     VecString,
 }
 
+impl Types {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Int => "int".to_string(),
+            Self::Float => "float".to_string(),
+            Self::Bool => "bool".to_string(),
+            Self::String => "str".to_string(),
+            Self::VecInt => "List[int]".to_string(),
+            Self::VecFloat => "List[float]".to_string(),
+            Self::VecBool => "List[bool]".to_string(),
+            Self::VecString => "List[str]".to_string(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AddQuestion {
     pub title: String,
     pub description: String,
     pub data: Vec<ExpectedInputOutput>,
+    pub function_name: String,
+    pub input_name: String,
     pub input_type: Types,
     pub output_type: Types,
 }
@@ -293,27 +313,49 @@ async fn serve_questions() -> Html<String> {
     return ren_html;
 }
 
-
 async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response {
     println!("got question request: {:?}", serde_json::to_string_pretty(&question_request));
     let title =  &question_request.title;
     let description = &question_request.description;
     let data = &question_request.data;
+    let function_name = &question_request.function_name;
+    let argument_name = &question_request.input_name;
     let input_type = &question_request.input_type;
     let output_type = &question_request.output_type;
 
     let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
     let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
-    println!("{}\n{}\n{:?}, {:?}, {:?}", title, description, data, input_type, output_type);
-    println!("Database updated!");
-
     let uuid = res.uuid;
 
-    return Response::builder()
-        .status(StatusCode::OK)
-        .body(Body::from("Database Updated"))
-        .unwrap();
+    println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}, {uuid}", title, description, data, input_type, output_type, function_name, argument_name);
+    println!("Database updated!");
+
+    let geninput = GenInput {
+        title: title.to_string(),
+        description: description.to_string(),
+        question_id: uuid,
+        input_output: data.to_vec(),
+        input_type: input_type.to_string(),
+        output_type: output_type.to_string(),
+        function_name: function_name.to_string(),
+        argument_name: argument_name.to_string(),
+    };
+
+    let status = generate_python_binding::bind_gen_python(geninput);
+
+    if status.success() {
+        return Response::builder()
+            .status(StatusCode::OK)
+            .body(Body::from("Database Updated"))
+            .unwrap();
+    } else {
+        return Response::builder()
+            .status(StatusCode::INTERNAL_SERVER_ERROR)
+            .body(Body::from("Database Updated"))
+            .unwrap();
+    }
+
 }
 
 async fn get_code_output(Json(json_request): Json<CodeRequest>) -> Response {
