@@ -86,6 +86,8 @@ submit_button.addEventListener("click", function(event) {
 
     let curr_title = document.getElementById("title").value;
     let curr_desc = document.getElementById("description").value;
+    let function_name = document.getElementById("fucntion_name").value;
+    let input_name = document.getElementById("input_name").value;
 
     let io_types = getSelectBoxValues();
     let output_type, input_type;
@@ -164,6 +166,8 @@ submit_button.addEventListener("click", function(event) {
         "description": curr_desc,
         "data": 
                 [],
+        "function_name": function_name,
+        "input_name": input_name,
         "input_type": input_type,
         "output_type": output_type
     }
