@@ -1,12 +1,11 @@
 extern crate mongodb;
 
-use crate::axum_serve::{AddQuestion, ExpectedInputOutput};
+use crate::axum_serve::{DBAddQuestion, ExpectedInputOutput};
 
 use mongodb::bson::{doc, Document};
 use mongodb::Client;
 use mongodb::options::ClientOptions;
 use serde::{Serialize, Deserialize};
-use uuid::Uuid;
 
 use futures::stream::StreamExt;
 
@@ -21,6 +20,7 @@ pub struct DbAddQuestion {
     pub description: String,
     pub data: Vec<ExpectedInputOutput>,
     pub uuid: String,
+    pub code_template: String,
 }
 
 impl DbStruct for DbAddQuestion {
@@ -62,14 +62,15 @@ pub async fn create_collection(client: &Client, db_name: &str, coll_name: &str) 
     db.create_collection(coll_name).await.unwrap();
 }
 
-pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &AddQuestion) -> DbAddQuestion {
+pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &DBAddQuestion) -> DbAddQuestion {
     let coll = client.database(db_name).collection::<DbAddQuestion>(coll_name);
     let doc_data = &doc.data;
     let db_update = DbAddQuestion {
         title: doc.title.clone(),
         description: doc.description.clone(),
         data: doc_data.to_vec(),
-        uuid: Uuid::new_v4().to_string(),
+        uuid: doc.uuid.clone(),
+        code_template: doc.template_code.to_string(),
     };
 
     coll.insert_one(db_update.clone()).await.unwrap();
