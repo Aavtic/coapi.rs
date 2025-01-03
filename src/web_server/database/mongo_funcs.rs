@@ -1,6 +1,6 @@
 extern crate mongodb;
 
-use crate::axum_serve::{DBAddQuestion, ExpectedInputOutput};
+use crate::axum_serve::ExpectedInputOutput;
 
 use mongodb::bson::{doc, Document};
 use mongodb::Client;
@@ -20,7 +20,7 @@ pub struct DbAddQuestion {
     pub description: String,
     pub data: Vec<ExpectedInputOutput>,
     pub uuid: String,
-    pub code_template: String,
+    pub code_template: Option<String>,
 }
 
 impl DbStruct for DbAddQuestion {
@@ -62,7 +62,7 @@ pub async fn create_collection(client: &Client, db_name: &str, coll_name: &str) 
     db.create_collection(coll_name).await.unwrap();
 }
 
-pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &DBAddQuestion) -> DbAddQuestion {
+pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, doc: &DbAddQuestion) -> DbAddQuestion {
     let coll = client.database(db_name).collection::<DbAddQuestion>(coll_name);
     let doc_data = &doc.data;
     let db_update = DbAddQuestion {
@@ -70,7 +70,7 @@ pub async fn insert_document(client: &Client, db_name: &str, coll_name: &str, do
         description: doc.description.clone(),
         data: doc_data.to_vec(),
         uuid: doc.uuid.clone(),
-        code_template: doc.template_code.to_string(),
+        code_template: doc.code_template.clone(),
     };
 
     coll.insert_one(db_update.clone()).await.unwrap();
