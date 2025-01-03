@@ -353,7 +353,7 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
             description: description.to_string(),
             data: data.to_vec(),
             uuid: uuid.to_string(),
-            code_template: gen_code, 
+            code_template: Some(gen_code), 
         };
         let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
