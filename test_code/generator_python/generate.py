@@ -107,7 +107,9 @@ class Solution:
         config_path = self.folder_path + "qnconfig.json"
         self.create_write_file(self.details, config_path)
 
-        return formatted_code
+        # Write the generated template code to standard output.
+        sys.stdout.write(formatted_code)
+        sys.exit(0)
 
     def create_dir_qnid(self):
         try:
