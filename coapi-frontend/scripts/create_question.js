@@ -92,6 +92,7 @@ submit_button.addEventListener("click", function(event) {
     console.log(function_name, input_name);
 
     let io_types = getSelectBoxValues();
+    console.log("io types: " + io_types);
     let output_type, input_type;
 
     switch (io_types[0]) {
@@ -160,6 +161,8 @@ submit_button.addEventListener("click", function(event) {
                 output_type = "VecBool";
                 break;
         }
+
+    console.log("input type" + input_type + "output type" + output_type);
 
     let args = [];
     let outs = [];
