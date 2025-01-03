@@ -23,6 +23,8 @@ use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
 use crate::web_server::utils::temp_utils;
 
+use mongo_funcs::DbAddQuestion;
+
 use crate::web_server::utils::generate_python_binding;
 use generate_python_binding::GenInput;
 
@@ -95,15 +97,6 @@ pub struct AddQuestion {
     pub input_name: String,
     pub input_type: Types,
     pub output_type: Types,
-}
-
-pub struct DBAddQuestion {
-    pub title: String,
-    pub description: String,
-    pub data: Vec<ExpectedInputOutput>,
-    pub function_name: String,
-    pub uuid: String,
-    pub template_code: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -355,17 +348,16 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
 
 
     if let Ok(gen_code) = res {
-        let db_question_doc = DBAddQuestion {
+        let db_question_doc = DbAddQuestion {
             title: title.to_string(),
             description: description.to_string(),
             data: data.to_vec(),
             uuid: uuid.to_string(),
-            function_name: function_name.to_string(),
-            template_code: gen_code, 
+            code_template: gen_code, 
         };
         let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
-        let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &db_question_doc).await;
+        let _ = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &db_question_doc).await;
 
         return Response::builder()
             .status(StatusCode::OK)
