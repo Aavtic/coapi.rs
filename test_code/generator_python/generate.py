@@ -85,7 +85,7 @@ class Generator:
         self.input_type = self.parsed["input_type"]
         self.output_type = self.parsed["output_type"]
 
-        self.default_code_style = """# COIDE: https://github.com/aavtic/coapi.rs
+        self.default_code_style = """# COAPI: https://github.com/aavtic/coapi.rs
 
 class Solution:
     def {function_name}(self{argument_name}) -> {output_type}:
