@@ -11,6 +11,7 @@ use std::sync::mpsc::{channel, Sender};
 use std::io::Write;
 use tokio::{sync::mpsc, spawn};
 use futures::{SinkExt, StreamExt};
+use uuid::Uuid;
 
 // use mongodb::bson::{doc, Document};
 // use std::sync::mpsc::channel;
@@ -101,10 +102,8 @@ pub struct DBAddQuestion {
     pub description: String,
     pub data: Vec<ExpectedInputOutput>,
     pub function_name: String,
-    pub input_name: String,
-    pub input_type: Types,
-    pub output_type: Types,
-    pub question_template: String,
+    pub uuid: String,
+    pub template_code: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -338,29 +337,41 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
     println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}", title, description, data, input_type, output_type, function_name, argument_name);
     println!("Database updated!");
 
+    let uuid = Uuid::new_v4().to_string();
+
     let geninput = GenInput {
         title: title.to_string(),
         description: description.to_string(),
-        question_id: uuid,
+        question_id: uuid.to_string(),
         input_output: data.to_vec(),
         input_type: input_type.to_string(),
         output_type: output_type.to_string(),
         function_name: function_name.to_string(),
         argument_name: argument_name.to_string(),
     };
+
     let res = generate_python_binding::bind_gen_python(geninput);
-    let uuid = res.uuid;
 
 
-    if let (gen_code) = res {
+
+    if let Ok(gen_code) = res {
+        let db_question_doc = DBAddQuestion {
+            title: title.to_string(),
+            description: description.to_string(),
+            data: data.to_vec(),
+            uuid: uuid.to_string(),
+            function_name: function_name.to_string(),
+            template_code: gen_code, 
+        };
         let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
-        let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &question_request).await;
+        let res = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &db_question_doc).await;
 
         return Response::builder()
             .status(StatusCode::OK)
             .body(Body::from("Database Updated"))
             .unwrap();
+
     } else {
         return Response::builder()
             .status(StatusCode::INTERNAL_SERVER_ERROR)
