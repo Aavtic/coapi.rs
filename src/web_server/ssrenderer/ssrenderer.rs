@@ -41,6 +41,7 @@ pub fn error_page() -> Html<String> {
 pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
     let title = question.title;
     let description = question.description;
+    let code_template = question.code_template.unwrap_or("# COAPI: https://github.com/aavtic/coapi.rs".to_string());
 
     let question_html = format!(r#"
                                 <div class="question">
@@ -71,6 +72,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
 
      <div class="code_box_button">
      <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
+{code_template}
      </textarea>
 
      <button class="runbutton">
