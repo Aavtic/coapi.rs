@@ -75,9 +75,19 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
 {code_template}
      </textarea>
 
-     <button class="runbutton">
-         Run
-     </button>
+     <div class="function_buttons">
+         <button class="runbutton">
+             Run
+         </button>
+
+         <button class="test_code">
+            Test Code
+         </button>
+
+         <button class="submit_code">
+            Submit
+         </button>
+     </div>
 
      </div>
      <div class="output" id="inneroutput" tabindex="0">
