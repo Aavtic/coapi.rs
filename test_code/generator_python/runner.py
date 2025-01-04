@@ -21,7 +21,7 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 # OUTPUT
 
 # {
-#         "status": Pass | Fail | URCodeErrorLOL | URCodeDontReturnAnything | Cooked
+#         "status": Pass | Fail: {"ex": "","got":""} | URCodeErrorLOL | URCodeDontReturnAnything | Cooked
 # }
 
 # LOAD <question-id>/qndetails.json
@@ -67,7 +67,25 @@ class Fail(Exception):
         self.got = got
 
     def to_string(self):
-        return f'{"status": "Fail: {"ex": {self.expected}, "got": {self.expected}}"}'
+        with open("runner.log", "a") as f:
+            f.write("result: " + str(self.expected) + "output " + str(self.got) + "\n")
+        return '{"status": {"Fail" : {"ex": "' + str(self.expected) + '", "got": "' + str(self.got) + '"}}}'
+        # return f'{{"status": "Fail: {"ex": {str(self.expected)}, "got": {str(self.got)}}"}}'
+
+
+class Loader:
+    def load_module(self, code_file):
+        directory, filename = os.path.split(code_file)
+        module = os.path.splitext(filename)[0]
+
+        sys.path.append(directory)
+
+        spec = importlib.util.spec_from_file_location(module, code_file)
+        # print(spec)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        return module
 
 
 class Runner:
@@ -83,18 +101,16 @@ class Runner:
     def run(self):
         gtypes = gentypes.GenTypes(self.question_settings)
         input_output = gtypes.parse_contents()
+        with open("runner.log", "a") as f:
+            f.write(f"input_output: {str(input_output)}\n")
         function_name = gtypes.get_function_name()
 
-        directory, filename = os.path.split(self.code_file)
-        module = os.path.splitext(filename)[0]
-
-        sys.path.append(directory)
-
-        print(module, self.code_file)
-        spec = importlib.util.spec_from_file_location(module, self.code_file)
-        print(spec)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        try:
+            module = Loader().load_module(self.code_file)
+        # TODO: Pass error to the client
+        except Exception as _e:
+            sys.stdout.write(URCodeErrorLOL().to_string())
+            sys.exit(0)
 
         solution_instance = module.Solution()
         function = getattr(solution_instance, function_name)
@@ -103,24 +119,33 @@ class Runner:
         cases = {i[0]: None for i in input_output}
 
         for (input, output) in input_output:
+            with open("runner.log", "a") as f:
+                f.write(f"input: {input}, input_type: {str(type(input))} " + f"output: {str(output)} output type: {str(type(output))}" "\n")
             try:
-                print(input, type(input))
+                # print(input, type(input))
                 result = function(input)
-            except:
+            except Exception as e:
+                with open("runner.log", "a") as f:
+                    f.write("input: " + str(type(input)) + str(function) + e +"\n")
                 error = URCodeErrorLOL().to_string()
                 sys.stdout.write(error)
                 sys.exit(0)
 
             if (result is None) and output:
-                sys.stdout.write(URCodeErrorLOL().to_string())
+                with open("runner.log", "a") as f:
+                    f.write("\n" + str(result) + ", " + str(output) + "\n")
+                sys.stdout.write(URCodeDontReturnAnything().to_string())
                 sys.exit(0)
             if result == output:
                 cases[input] = Pass
             else:
                 fail = Fail(output, result)
                 sys.stdout.write(fail.to_string())
+                sys.exit(0)
 
-        print(cases)
+        # print(cases)
+        sys.stdout.write(Pass().to_string())
+        sys.exit(0)
 
     def parse_details(self, data: str):
         try:
