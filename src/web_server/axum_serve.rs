@@ -22,6 +22,7 @@ use crate::runner::console_run::python_console_run;
 use crate::web_server::database::mongo_funcs;
 use crate::web_server::ssrenderer::ssrenderer;
 use crate::web_server::utils::temp_utils;
+use crate::web_server::test_python3::test_python3;
 
 use mongo_funcs::DbAddQuestion;
 
@@ -29,7 +30,7 @@ use crate::web_server::utils::generate_python_binding;
 use generate_python_binding::GenInput;
 
 use crate::web_server::utils::communications;
-use communications::WSBuffer;
+use communications::{WSBuffer, IPCStatus};
 
 use crate::poller::poller;
 use poller::StdinData;
@@ -52,6 +53,18 @@ struct CodeRequest {
 struct CodeResponse {
     output: String,
     status: i32,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+struct TestCodeRequest {
+    code: String,
+    question_id: String,
+    language: String,
+}
+
+#[derive(Serialize)]
+struct TestCodeResponse {
+    status: IPCStatus,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -272,29 +285,33 @@ async fn live_code_ws(socket: WebSocket) {
     }
 }
 
-fn _get_live_code_output(json_request: CodeRequest) -> Response {
+async fn test_code(Json(json_request): Json<TestCodeRequest>) -> Response {
     println!("received request: {:?}", serde_json::to_string_pretty(&json_request).unwrap());
     let code = json_request.code;
+    let qn_id = json_request.question_id;
     let temp_folder_format = "./live-code/pyenv-XXXX";
     let temp_folder = temp_utils::create_temp_dir(temp_folder_format).unwrap().trim().to_string();
     let file_path = &(temp_folder.clone() + "/main.py");
     temp_utils::create_temp_file(&(temp_folder + "/main.py"));
     std::fs::write(file_path, code.as_bytes()).expect("ERROR WRITING TO FILE.");
-    // let proc_output = python_console_run::run_python(filename);
-    // let code_output = CodeResponse{output: proc_output.output, status: proc_output.status};
-    // docker_build_python::docker_build();
-    // let code_output = docker_python_execution::run_python_code();
 
-    let response = Response::builder()
+    let status = test_python3::test_python3(qn_id.to_string(), file_path.to_string());
+    println!("{:?}", status);
+
+    let test_response = TestCodeResponse {
+        status,
+    };
+    let json_resp = serde_json::to_string::<TestCodeResponse>(&test_response).unwrap();
+    println!("Response JSON: {}", json_resp);
+
+    println!("RESPONSE SENT!");
+    return Response::builder()
         .status(StatusCode::OK)
         .header("Access-Control-Allow-Origin","*")
         .header("Access-Control-Allow-Methods", "POST")
         .header("Access-Control-Allow-Headers","Content-Type")
-        .body(Body::from(serde_json::to_string("AOK").unwrap()))
+        .body(Body::from(json_resp))
         .unwrap();
-    println!("RESPONSE SENT!");
-
-    return response;
 } 
 
 // TODO: Create a structure of functions with single db connection.
@@ -418,6 +435,7 @@ pub async fn code_output_api(addr: &str) {
         .route("/v1", post(get_code_output))
         .route("/v1", options(preflight_response))
         .route("/v1/create_question", post(insert_question))
+        .route("/v1/test_code", post(test_code))
         .route("/v1/get_questions", get(serve_questions));
 
     let websocket_routes = Router::new()
