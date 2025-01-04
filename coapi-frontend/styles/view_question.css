@@ -115,6 +115,74 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
+#pass_id {
+    font-size: 1rem; 
+    font-weight: 700; 
+    text-align: left;
+    color: #4bb543; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    padding: 15px 30px; /* Padding around the heading */
+    border-radius: 10px; /* Rounded corners */
+}
+
+#fail_id {
+    font-size: 1rem; 
+    font-weight: 700; 
+    text-align: left;
+    color: #d1001c; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    padding: 15px 30px; /* Padding around the heading */
+    border-radius: 10px; /* Rounded corners */
+}
+
+#fail_id_sub {
+    font-size: 1rem; 
+    font-weight: 300; /* Slightly less bold */
+    text-align: left; /* Center the text */
+    color: #ff4c4c; /* Bright red to indicate error */
+    background-color: #1e1e2f; /* Dark background */
+    padding: 10px 20px; /* Padding around the text */
+    border: 1px solid #ff4c4c; /* Border matching text color */
+}
+
+#error_id {
+    font-size: 1rem; 
+    font-weight: 700; 
+    text-align: left;
+    color: #d1001c; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    padding: 15px 30px; /* Padding around the heading */
+    border-radius: 10px; /* Rounded corners */
+}
+
+#error_id_sub {
+    font-size: 1rem; 
+    font-weight: 300; /* Slightly less bold */
+    text-align: left; /* Center the text */
+    color: #ff4c4c; /* Bright red to indicate error */
+    background-color: #1e1e2f; /* Dark background */
+    padding: 10px 20px; /* Padding around the text */
+    border: 1px solid #ff4c4c; /* Border matching text color */
+    
+}
+
+#cooked_id {
+    font-size: 2rem; 
+    font-weight: 300; /* Slightly less bold */
+    text-align: left; /* Center the text */
+    color: #ff4c4c; /* Bright red to indicate error */
+    background-color: #1e1e2f; /* Dark background */
+    padding: 10px 20px; /* Padding around the text */
+    border: 1px solid #ff4c4c; /* Border matching text color */
+}
+}
+
 
 @keyframes heading {
     0% {
