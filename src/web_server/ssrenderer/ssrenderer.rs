@@ -91,9 +91,10 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
 
      </div>
      <div class="output" id="inneroutput" tabindex="0">
-         <h2 class="output-text"></h2>
-         <div id="output_cursor"><pre id="outputext" class="outputext"><span class="cursor">▊</span></pre></div>
-         <h3 class="statustext"></h3>
+<h1 class="output-text" id="nil"></h1>
+<h2 class="sub-text" id="nil"></h2>
+<div id="output_cursor"><pre id="outputext" class="outputext"><span class="cursor">▊</span></pre></div>
+<h3 class="statustext"></h3>
      </div>
      </div>
 
