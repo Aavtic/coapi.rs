@@ -2,8 +2,13 @@ import ast
 import json
 
 
+def log_error(msg: str):
+    with open("./gentype.log", "a") as f:
+        f.write("\n" + msg + "\n")
+
 def get_checked_type(st: str, typ: str):
     # supported_types = ["str", "int", "float", "bool", "List[int]", "List[str]", "List[bool]", "List[float]"]
+    log_error(str(st) + ", " + typ)
     evaluated = ast.literal_eval(st)
     match typ:
         case "str":
@@ -62,19 +67,25 @@ class GenTypes:
         self.parsed = json.loads(self.contents)
         input_output = self.parsed["input_output"]
         input_type_str = self.parsed["input_type"]
-        # output_type_str = self.parsed["output_type"]
+        output_type_str = self.parsed["output_type"]
         input_output_res = []
 
-        for input in input_output:
+        with open("gtype.log", "a") as f:
+            f.write(f"{str(input_output)}")
+
+        for input_dict in input_output:
             try:
-                self.input_type = get_checked_type(input, input_type_str)
-                print(self.input_type, type(self.input_type), input_output[input], type(input_output[input]))
+                self.input_type = get_checked_type(input_dict["input"], input_type_str)
+                self.output_type = get_checked_type(input_dict["output"], output_type_str)
+                with open("gtype.log", "a") as f:
+                    f.write(f"input: {self.input_type} input_type: {str(type(self.input_type))}, output: {self.output_type} output_type: {str(type(self.output_type))} \n")
+                # print(self.input_type, type(self.input_type), input_output[input_dict]["input"], type(input_output[input_dict]["input"]))
                 # self.output_type = get_checked_type(input_output[input], output_type_str)
                 # print(self.output_type)
             except Exception as e:
                 raise e
 
-            input_output_res.append((self.input_type, input_output[input]))
+            input_output_res.append((self.input_type, self.output_type))
 
         return input_output_res
 
