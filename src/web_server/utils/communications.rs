@@ -38,7 +38,7 @@ pub enum Status {
     Pass,
     Fail(Fail),
     Cooked,
-    URCodeErrorLOL,
+    URCodeErrorLOL(URCodeErrorLOL),
     URCodeDontReturnAnything,
 }
 
@@ -46,6 +46,12 @@ pub enum Status {
 pub struct Fail {
     ex: String,
     got: String,
+    input: String
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct URCodeErrorLOL {
+    error: String
 }
 
 #[derive(Serialize, Deserialize, Debug)]
