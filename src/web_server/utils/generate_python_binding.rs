@@ -17,6 +17,9 @@ use serde_json;
 //         "input_type": "int",
 //         "output_type": "int",
 //}
+//
+
+const GENERATOR_PATH: &str = "./test_code/generator_python/generate.py";
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -35,7 +38,7 @@ pub fn bind_gen_python(gen_input: GenInput) -> Result<String, std::io::ErrorKind
     let input_json = serde_json::to_string(&gen_input).unwrap();
     println!("{}", input_json);
     let command = Command::new("python3")
-        .arg("./test_code/generator_python/generate.py")
+        .arg(GENERATOR_PATH)
         .arg("--details")
         .arg(input_json + "\n")
         .output()
