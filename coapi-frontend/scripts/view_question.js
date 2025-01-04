@@ -7,22 +7,59 @@ function update_output(text) {
 }
 
 run_button.onclick = () => {
-  const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
-
-  socket.addEventListener("open", (_event) => {
     const codeBox = document.querySelector(".codebox");
 
-    const myJson = {
-      "code": codeBox.value,
-      "language": "Python",
-    };
-    console.log("sending", JSON.stringify(myJson));
-    socket.send(JSON.stringify(myJson));
-  });
+    const url = window.location.href;  // Get the current URL
+    const parts = url.split('/');      // Split the URL by '/'
 
-  socket.addEventListener("message", (event) => {
-    let data = event.data
-    console.log("Message from server ", data);
-    update_output(data)
-  });
+    const id = parts[parts.length - 1]; // Get the last part
+
+    const myJson = {
+        "code": codeBox.value,
+        "question_id": id, 
+        "language": "Python",
+    };
+
+    const request = new Request(
+          "http://127.0.0.1:8081/api/v1/test_code", {
+          method: "POST",
+          headers: myHeaders,
+          body: JSON.stringify(myJson),
+      });
+
+    fetch(request)
+      .then((response) => {
+          if (response.status === 200) {
+              return response.text;
+          } else {
+              throw new Error("API request failed!");
+          }
+      })
+    .then((text) => {
+        console.log(text);
+    })
+    .catch((error) => {
+        console.error(error);
+    });
+}
+
+function live_code_execution() {
+    const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
+
+    socket.addEventListener("open", (_event) => {
+        const codeBox = document.querySelector(".codebox");
+
+        const myJson = {
+            "code": codeBox.value,
+            "language": "Python",
+        };
+        console.log("sending", JSON.stringify(myJson));
+        socket.send(JSON.stringify(myJson));
+    });
+
+    socket.addEventListener("message", (event) => {
+        let data = event.data
+        console.log("Message from server ", data);
+        update_output(data)
+    });
 }
