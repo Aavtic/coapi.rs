@@ -101,8 +101,20 @@ class Runner:
         self.code_file = self.parsed["filepath"]
         self.question_id = self.parsed["question_id"]
         self.question_settings = WORKING_DIRECTORY_ROOT + "/question_blueprints/" + self.question_id + "/qnconfig.json"
+        self.original_write = sys.stdout.write
 
         self.run()
+
+    def foo(self, uwu):
+        # what am I doing?
+        # Me? Just hangin around...
+        pass
+
+    def disable_stdout(self):
+        sys.stdout.write = self.foo
+
+    def enable_stdout(self):
+        sys.stdout.write = self.original_write
 
     def run(self):
         gtypes = gentypes.GenTypes(self.question_settings)
@@ -111,10 +123,12 @@ class Runner:
             f.write(f"input_output: {str(input_output)}\n")
         function_name = gtypes.get_function_name()
 
+        self.disable_stdout()
         try:
             module = Loader().load_module(self.code_file)
         # TODO: Pass error to the client
         except Exception as e:
+            self.enable_stdout()
             sys.stdout.write(URCodeErrorLOL(e).to_string())
             sys.exit(0)
 
@@ -129,13 +143,17 @@ class Runner:
                 f.write(f"input: {input}, input_type: {str(type(input))} " + f"output: {str(output)} output type: {str(type(output))}" "\n")
             try:
                 # print(input, type(input))
+                self.disable_stdout()
                 result = function(input)
             except Exception as e:
                 with open("runner.log", "a") as f:
                     f.write("input: " + str(type(input)) + str(function) + str(e) +"\n")
+                self.enable_stdout()
                 error = URCodeErrorLOL(e).to_string()
                 sys.stdout.write(error)
                 sys.exit(0)
+
+            self.enable_stdout()
 
             if (result is None) and output:
                 with open("runner.log", "a") as f:
