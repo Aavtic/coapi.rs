@@ -76,6 +76,7 @@ function createKeyboardListener(socket) {
 }
 
 function run_button_test() {
+    clear_msgs();
     const codeBox = document.querySelector(".codebox");
 
     const url = window.location.href;  // Get the current URL
@@ -148,6 +149,7 @@ function run_button_test() {
 }
 
 function run_button_fn_ws() {
+    clear_msgs();
     const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
     outputext.textContent = "";
 
