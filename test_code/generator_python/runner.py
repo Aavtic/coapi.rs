@@ -1,6 +1,7 @@
 import json
 import gentypes
 import os
+import io
 import sys
 import importlib
 import argparse
@@ -21,7 +22,7 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 # OUTPUT
 
 # {
-#         "status": Pass | Fail: {"ex": "","got":""} | URCodeErrorLOL | URCodeDontReturnAnything | Cooked
+        #         "status": Pass | Fail: {"ex": "","got":"", "input": ""} | URCodeErrorLOL {"error": e} | URCodeDontReturnAnything | Cooked
 # }
 
 # LOAD <question-id>/qndetails.json
@@ -42,8 +43,12 @@ parser.add_argument("--question_details", required=True, help="JSON question str
 
 
 class URCodeErrorLOL(Exception):
+    def __init__(self, error):
+        self.error = error
+
     def to_string(self):
-        return '{"status": "URCodeErrorLOL"}'
+        # return '{"status": "URCodeErrorLOL", "error": "' + str(self.error) + '"}'
+        return '{"status": {"URCodeErrorLOL" : {"error": "' + str(self.error) + '"}}}'
 
 
 class Pass:
@@ -62,14 +67,15 @@ class URCodeDontReturnAnything(Exception):
 
 
 class Fail(Exception):
-    def __init__(self, expected, got):
+    def __init__(self, expected, got, input):
         self.expected = expected
         self.got = got
+        self.input = input
 
     def to_string(self):
         with open("runner.log", "a") as f:
             f.write("result: " + str(self.expected) + "output " + str(self.got) + "\n")
-        return '{"status": {"Fail" : {"ex": "' + str(self.expected) + '", "got": "' + str(self.got) + '"}}}'
+        return '{"status": {"Fail" : {"ex": "' + str(self.expected) + '", "got": "' + str(self.got) + '", "input": "' + str(self.input) + '"}}}'
         # return f'{{"status": "Fail: {"ex": {str(self.expected)}, "got": {str(self.got)}}"}}'
 
 
@@ -108,8 +114,8 @@ class Runner:
         try:
             module = Loader().load_module(self.code_file)
         # TODO: Pass error to the client
-        except Exception as _e:
-            sys.stdout.write(URCodeErrorLOL().to_string())
+        except Exception as e:
+            sys.stdout.write(URCodeErrorLOL(e).to_string())
             sys.exit(0)
 
         solution_instance = module.Solution()
@@ -126,8 +132,8 @@ class Runner:
                 result = function(input)
             except Exception as e:
                 with open("runner.log", "a") as f:
-                    f.write("input: " + str(type(input)) + str(function) + e +"\n")
-                error = URCodeErrorLOL().to_string()
+                    f.write("input: " + str(type(input)) + str(function) + str(e) +"\n")
+                error = URCodeErrorLOL(e).to_string()
                 sys.stdout.write(error)
                 sys.exit(0)
 
@@ -139,7 +145,7 @@ class Runner:
             if result == output:
                 cases[input] = Pass
             else:
-                fail = Fail(output, result)
+                fail = Fail(output, result, input)
                 sys.stdout.write(fail.to_string())
                 sys.exit(0)
 
