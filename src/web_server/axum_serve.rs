@@ -298,10 +298,7 @@ async fn test_code(Json(json_request): Json<TestCodeRequest>) -> Response {
     let status = test_python3::test_python3(qn_id.to_string(), file_path.to_string());
     println!("{:?}", status);
 
-    let test_response = TestCodeResponse {
-        status,
-    };
-    let json_resp = serde_json::to_string::<TestCodeResponse>(&test_response).unwrap();
+    let json_resp = serde_json::to_string::<IPCStatus>(&status).unwrap();
     println!("Response JSON: {}", json_resp);
 
     println!("RESPONSE SENT!");
