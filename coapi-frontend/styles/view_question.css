@@ -181,8 +181,18 @@ body {
     padding: 10px 20px; /* Padding around the text */
     border: 1px solid #ff4c4c; /* Border matching text color */
 }
-}
 
+#noreturn_id {
+    font-size: 1rem; 
+    font-weight: 700; 
+    text-align: left;
+    color: #d1001c; 
+    text-transform: uppercase; 
+    letter-spacing: 3px;
+    margin-bottom: 20px;
+    padding: 15px 30px; /* Padding around the heading */
+    border-radius: 10px; /* Rounded corners */    
+}
 
 @keyframes heading {
     0% {
