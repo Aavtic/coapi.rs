@@ -67,19 +67,54 @@ body {
     white-space: pre-wrap;
 }
 
-.runbutton {
-    background-color: #d41111;
-    margin-top: 10px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+.function_buttons {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    gap: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-.runbutton:hover {
-    background-color: #504bd1;
-    transition: background-color 0.5s ease;
+.function_buttons button {
+    background: linear-gradient(145deg, #2a2a40, #1a1a2b);
+    color: #dcdcdc;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
+
+.function_buttons button:nth-child(1):hover {
+    background: linear-gradient(145deg, #3a3a50, #29293f);
+    color: #ff6363;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.function_buttons button:nth-child(2):hover {
+    background: linear-gradient(145deg, #3a3a50, #29293f);
+    color: #63ff89;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.function_buttons button:nth-child(3):hover {
+    background: linear-gradient(145deg, #3a3a50, #29293f);
+    color: #6388ff; 
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.function_buttons button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
 
 @keyframes heading {
     0% {
