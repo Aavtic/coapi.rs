@@ -1,4 +1,4 @@
-const web_host = "10.10.106.8";
+const web_host = "192.168.13.165";
 
 function setUpOnQuestionClick() {
     const divs = document.querySelectorAll('.question');

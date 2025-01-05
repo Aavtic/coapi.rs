@@ -2,7 +2,7 @@ const run_button = document.querySelector(".runbutton");
 const outputtext = document.querySelector(".outputext");
 
 
-const web_host = "10.10.106.8";
+const web_host = "192.168.13.165";
 
 
 function update_output(text) {  
