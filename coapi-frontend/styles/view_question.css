@@ -20,8 +20,33 @@ body {
 }
 
 .left {
-    width: 40%;
+    width: 100%;
     padding: 20px;
+}
+
+.description h1 {
+    color: red;
+}
+
+.description h2 {
+    color: yellow;
+}
+
+.description pre {
+    background: #0c0d0c;
+    border: 1px solid #ddd;
+    border-left: 3px solid yellow;
+    color: #666;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 1.6em;
+    max-width: 100%;
+    overflow: auto;
+    padding: 1em 1.5em;
+    display: block;
+    word-wrap: break-word;
 }
 
 .right {
