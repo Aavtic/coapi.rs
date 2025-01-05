@@ -36,7 +36,7 @@ h1 {
     flex-wrap: wrap; 
     gap: 20px;       
     padding: 20px;
-    justify-content: center; 
+    justify-content: center;
 }
 
 .question {
@@ -67,13 +67,17 @@ h1 {
 }
 
 .question h2 {
-    color: yellow;              /* Title color */
-    margin-bottom: 10px;             /* Space below the title */
-    font-size: 1.5em;                /* Larger font size */
+    color: yellow;
+    margin-bottom: 50px;
+    font-size: 1.5em; 
+    color: yellow;            
+    margin-bottom: 30px;             
+    font-size: 1.5em;                
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110%;
+    display: block;
 }
 
-.question h3 {
-    color: #555;                     /* Subtitle color */
-    margin-top: 0;
-    font-size: 1.2em;
 }

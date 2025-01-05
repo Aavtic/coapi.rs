@@ -1,10 +1,11 @@
+const web_host = "10.10.106.8";
 
 function setUpOnQuestionClick() {
     const divs = document.querySelectorAll('.question');
 
     divs.forEach(div => {
         div.addEventListener('click', function() {
-            window.open(`http://127.0.0.1:8081/pages/question/${this.id}`, '_blank');
+            window.open(`http://${web_host}:8081/pages/question/${this.id}`, '_blank');
         });
     });
 }
@@ -12,7 +13,7 @@ function setUpOnQuestionClick() {
 
 function load_questions() {
     const request = new Request(
-          "http://127.0.0.1:8081/api/v1/get_questions", {
+          `http://${web_host}:8081/api/v1/get_questions`, {
           method: "GET",
           headers: {
             "Content-Type": "text/html",

@@ -1,6 +1,10 @@
 const run_button = document.querySelector(".runbutton");
 const outputtext = document.querySelector(".outputext");
 
+
+const web_host = "10.10.106.8";
+
+
 function update_output(text) {  
     let curr_text = outputtext.textContent;
     outputtext.textContent = curr_text + text;
@@ -21,7 +25,7 @@ run_button.onclick = () => {
     };
 
     const request = new Request(
-          "http://127.0.0.1:8081/api/v1/test_code", {
+          `http://${web_host}:8081/api/v1/test_code`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
@@ -44,7 +48,7 @@ run_button.onclick = () => {
 }
 
 function live_code_execution() {
-    const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
+    const socket = new WebSocket(`ws://${web_host}:8081/ws/get_live_output`);
 
     socket.addEventListener("open", (_event) => {
         const codeBox = document.querySelector(".codebox");

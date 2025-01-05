@@ -1,5 +1,6 @@
 use axum::response::Html;
 use crate::web_server::database::mongo_funcs::DbAddQuestion;
+use crate::WEB_HOST;
 
 
 pub fn error_page() -> Html<String> {
@@ -53,7 +54,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
 <html lang="en"><head>
     <meta charset="utf-8">
     <title class="title">{title}</title>
-    <link rel="stylesheet" href="http://127.0.0.1:8081/styles/view_question.css">
+    <link rel="stylesheet" href="http://{WEB_HOST}:8081/styles/view_question.css">
   </head>
 
   <body>
@@ -104,7 +105,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
     </p>
     </div>
       </div>
-    <script src="http://127.0.0.1:8081/scripts/coide.js"></script>
+    <script src="http://{WEB_HOST}:8081/scripts/coide.js"></script>
   </body></html>
 "#, title=title, question_html=question_html);
     return Html::from(html_document);
@@ -127,14 +128,12 @@ pub fn generate_questions_html(questions: Vec<DbAddQuestion>) ->  Html<String> {
     let mut html = String::new();
     for question in questions {
         let title = question.title;
-        let description = question.description;
         let id = question.uuid;
         let html_formatted = format!(r#"
 <div class="question" id="{id}">
 <h2 name="title">{title}</h2>
-<h3 name="description">{description} </h3>
 </div>
-"#, id=id, title=title, description=description);
+"#, id=id, title=title);
         html.push_str(&html_formatted);
     }
     return Html::from(html.to_string());

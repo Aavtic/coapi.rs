@@ -10,6 +10,8 @@ let options = [];
 let output_button_count = 2;
 
 
+const web_host = "10.10.106.8"
+
 
 // <label for="argument1">Argument 1:</label>
 // <textarea id="arugment-1" name="argument-1" rows="3" placeholder="Enter the expected output" required></textarea>
@@ -211,7 +213,7 @@ submit_button.addEventListener("click", function(event) {
     console.log(myJson)
 
     const request = new Request(
-          "http://127.0.0.1:8081/api/v1/create_question", {
+          `http://${web_host}:8081/api/v1/create_question`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),

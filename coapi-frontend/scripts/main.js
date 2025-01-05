@@ -4,6 +4,8 @@ const output = document.querySelector(".outputext");
 const output_heading  = document.querySelector(".output-text");
 const status_text  = document.querySelector(".statustext");
 
+const web_host = "10.10.106.8";
+
 
 button.onclick = () => {
 const myHeaders = new Headers();
@@ -18,7 +20,7 @@ const myHeaders = new Headers();
     };
 
     const request = new Request(
-          "http://127.0.0.1:8081/api/v1", {
+          `http://${web_host}:8081/api/v1`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
