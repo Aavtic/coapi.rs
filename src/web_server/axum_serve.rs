@@ -26,16 +26,14 @@ use crate::web_server::test_python3::test_python3;
 
 use mongo_funcs::DbAddQuestion;
 
+use crate::web_server::utils::generate_markdown;
 use crate::web_server::utils::generate_python_binding;
 use generate_python_binding::GenInput;
 
 use crate::web_server::utils::communications;
 use communications::{WSBuffer, IPCStatus};
 
-use crate::poller::poller;
-use poller::StdinData;
-use poller::StdinDataStatus;
-
+use crate::poller::poller::{self, StdinData, StdinDataStatus};
 
 static DATABASE_NAME: &str = "coapidb";
 static QUESTIONS_COLLECTION_NAME: &str = "questions";
@@ -340,15 +338,13 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
     let input_type = &question_request.input_type;
     let output_type = &question_request.output_type;
 
-
-    println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}", title, description, data, input_type, output_type, function_name, argument_name);
-    println!("Database updated!");
+    let html_description = generate_markdown::generate_html_from_md(description.to_string());
 
     let uuid = Uuid::new_v4().to_string();
 
     let geninput = GenInput {
         title: title.to_string(),
-        description: description.to_string(),
+        description: html_description.to_string(),
         question_id: uuid.to_string(),
         input_output: data.to_vec(),
         input_type: input_type.to_string(),
@@ -364,7 +360,7 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
     if let Ok(gen_code) = res {
         let db_question_doc = DbAddQuestion {
             title: title.to_string(),
-            description: description.to_string(),
+            description: html_description.to_string(),
             data: data.to_vec(),
             uuid: uuid.to_string(),
             code_template: Some(gen_code), 
@@ -372,6 +368,8 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
         let client = mongo_funcs::connect("mongodb://localhost:27017").await;
 
         let _ = mongo_funcs::insert_document(&client, DATABASE_NAME, QUESTIONS_COLLECTION_NAME, &db_question_doc).await;
+        println!("{}\n{}\n{:?}, {:?}, {:?}, {}, {}", title, html_description.to_string(), data, input_type, output_type, function_name, argument_name);
+        println!("Database updated!");
 
         return Response::builder()
             .status(StatusCode::OK)
