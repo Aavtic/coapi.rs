@@ -71,7 +71,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
            <div class="container">
 
      <div class="code_box_button">
-     <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
+  <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
 {code_template}
      </textarea>
 
@@ -109,6 +109,19 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
 "#, title=title, question_html=question_html);
     return Html::from(html_document);
 }
+//<script>
+//hljs.highlightAll();
+//
+//setInterval(() => {{
+//    const codebox = document.querySelector(".codebox");
+//
+//    codebox.dataset.highlighted = null;
+//    hljs.highlightAll();
+//
+//}}, 100);
+//
+//
+//</script>
 
 pub fn generate_questions_html(questions: Vec<DbAddQuestion>) ->  Html<String> {
     let mut html = String::new();

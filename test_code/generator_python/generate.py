@@ -100,7 +100,7 @@ class Solution:
     def generate(self):
         self.create_dir_qnid()
         formatted_code = self.default_code_style.format(function_name=self.function_name, 
-                                                        argument_name = f", {self.argument_name}: {self.input_type}" if self.argument_name else "",
+                                                        argument_name = f", {self.argument_name}: {self.input_type[0].lower() + self.input_type[1:]}" if self.argument_name else "",
                                                         output_type = self.output_type)
         code_file_path = self.folder_path + "main.py"
         self.create_write_file(formatted_code, code_file_path)
