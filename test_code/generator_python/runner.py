@@ -1,9 +1,8 @@
 import json
 import gentypes
 import os
-import io
-import sys
 import importlib
+import sys
 import argparse
 
 
@@ -136,7 +135,7 @@ class Runner:
         function = getattr(solution_instance, function_name)
 
         # ASSUMING INPUT MUST BE UNIQUE
-        cases = {i[0]: None for i in input_output}
+        cases = {str(i[0]): None for i in input_output}
 
         for (input, output) in input_output:
             with open("runner.log", "a") as f:
@@ -161,7 +160,7 @@ class Runner:
                 sys.stdout.write(URCodeDontReturnAnything().to_string())
                 sys.exit(0)
             if result == output:
-                cases[input] = Pass
+                cases[str(input)] = Pass
             else:
                 fail = Fail(output, result, input)
                 sys.stdout.write(fail.to_string())
