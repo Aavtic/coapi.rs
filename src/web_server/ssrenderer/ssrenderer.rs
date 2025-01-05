@@ -47,7 +47,7 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
     let question_html = format!(r#"
                                 <div class="question">
                                 <h2 name="title">{title}</h2>
-                                <h3 name="description">{description} </h3>
+                                <div name="description"> class="description" {description} </div>
                                 </div>
                                 "#, title=title, description=description);
     let html_document = format!(r#"
