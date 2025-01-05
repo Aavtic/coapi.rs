@@ -6,6 +6,7 @@ def log_error(msg: str):
     with open("./gentype.log", "a") as f:
         f.write("\n" + msg + "\n")
 
+
 def get_checked_type(st: str, typ: str):
     # supported_types = ["str", "int", "float", "bool", "List[int]", "List[str]", "List[bool]", "List[float]"]
     log_error(str(st) + ", " + typ)
@@ -75,8 +76,18 @@ class GenTypes:
 
         for input_dict in input_output:
             try:
+                with open("gtype.log", "a") as f:
+                    f.write(f"pninput: { input_dict['input'] } pinput_type: {str(type(input_dict['input']))}, poutput: {input_dict['output']} poutput_type: {str(type(input_dict['output']))} \n")
+
+                # if not (type(input_dict["input"]) == type([])):
                 self.input_type = get_checked_type(input_dict["input"], input_type_str)
+                # else:
+                # self.input_type = input_dict["input"]
+                # if not type(input_dict["output"]) == type([]):
                 self.output_type = get_checked_type(input_dict["output"], output_type_str)
+                # else:
+                #     self.input_type = input_dict["output"]
+
                 with open("gtype.log", "a") as f:
                     f.write(f"input: {self.input_type} input_type: {str(type(self.input_type))}, output: {self.output_type} output_type: {str(type(self.output_type))} \n")
                 # print(self.input_type, type(self.input_type), input_output[input_dict]["input"], type(input_output[input_dict]["input"]))
