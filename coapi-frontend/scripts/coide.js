@@ -8,7 +8,8 @@ const statusbar = document.querySelector(".statustext");
 const output_text = document.querySelector(".output-text");
 const sub_text = document.querySelector(".sub-text");
 
-const web_host = "10.10.106.8"
+
+const web_host = "192.168.13.165"
 
 
 console.log("coide");
