@@ -8,6 +8,8 @@ const statusbar = document.querySelector(".statustext");
 const output_text = document.querySelector(".output-text");
 const sub_text = document.querySelector(".sub-text");
 
+const web_host = "10.10.106.8"
+
 
 console.log("coide");
 let userInput = '';
@@ -94,7 +96,7 @@ function run_button_test() {
     myHeaders.append("content-type", "application/json");
 
     const request = new Request(
-          "http://127.0.0.1:8081/api/v1/test_code", {
+          `http://${web_host}:8081/api/v1/test_code`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
@@ -150,7 +152,7 @@ function run_button_test() {
 
 function run_button_fn_ws() {
     clear_msgs();
-    const socket = new WebSocket("ws://127.0.0.1:8081/ws/get_live_output");
+    const socket = new WebSocket(`ws://${web_host}:8081/ws/get_live_output`);
     outputext.textContent = "";
 
     socket.addEventListener("open", (_event) => {
