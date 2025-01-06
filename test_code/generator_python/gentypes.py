@@ -2,14 +2,16 @@ import ast
 import json
 
 
-def log_error(msg: str):
-    with open("./gentype.log", "a") as f:
-        f.write("\n" + msg + "\n")
+def log_error(msg):
+    with open("./gtype.log", "a") as f:
+        f.write("\n" + str(msg) + "\n")
 
 
 def get_checked_type(st: str, typ: str):
     # supported_types = ["str", "int", "float", "bool", "List[int]", "List[str]", "List[bool]", "List[float]"]
     log_error(str(st) + ", " + typ)
+    if typ == "str":
+        st = f'"{st}"'
     evaluated = ast.literal_eval(st)
     match typ:
         case "str":
@@ -71,13 +73,13 @@ class GenTypes:
         output_type_str = self.parsed["output_type"]
         input_output_res = []
 
-        with open("gtype.log", "a") as f:
-            f.write(f"{str(input_output)}")
+        log_error(input_output)
 
         for input_dict in input_output:
             try:
-                with open("gtype.log", "a") as f:
-                    f.write(f"pninput: { input_dict['input'] } pinput_type: {str(type(input_dict['input']))}, poutput: {input_dict['output']} poutput_type: {str(type(input_dict['output']))} \n")
+                log_error("pninput: { input_dict['input'] } pinput_type: {str(type(input_dict['input']))}, poutput: {input_dict['output']} poutput_type: {str(type(input_dict['output']))} \n")
+
+                log_error(f"input_arg: {input_dict['input']} output_arg: {input_dict['output']}")
 
                 # if not (type(input_dict["input"]) == type([])):
                 self.input_type = get_checked_type(input_dict["input"], input_type_str)
@@ -108,11 +110,12 @@ class GenTypes:
 
 # supported_types = ["str", "int", "float", "bool", "List[int]", "List[str]", "List[bool]", "List[float]"]
 
+
 def test():
     type1 = get_checked_type("1", "int")
     print(type1, type(type1))
 
-    type1 = get_checked_type("1.13", "int")
+    type1 = get_checked_type("1.13", "float")
     print(type1, type(type1))
 
     type1 = get_checked_type('"hello there"', "str")
