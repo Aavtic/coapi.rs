@@ -10,7 +10,7 @@ let options = [];
 let output_button_count = 2;
 
 
-const web_host = "192.168.13.165";
+const web_host = "127.0.0.1";
 
 
 // <label for="argument1">Argument 1:</label>

@@ -4,7 +4,7 @@ const output = document.querySelector(".outputext");
 const output_heading  = document.querySelector(".output-text");
 const status_text  = document.querySelector(".statustext");
 
-const web_host = "192.168.13.165";
+const web_host = "127.0.0.1";
 
 
 button.onclick = () => {

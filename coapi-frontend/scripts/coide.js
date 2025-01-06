@@ -9,7 +9,7 @@ const output_text = document.querySelector(".output-text");
 const sub_text = document.querySelector(".sub-text");
 
 
-const web_host = "192.168.13.165"
+const web_host = "127.0.0.1"
 
 
 console.log("coide");

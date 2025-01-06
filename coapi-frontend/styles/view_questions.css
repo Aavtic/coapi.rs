@@ -36,7 +36,7 @@ h1 {
     flex-wrap: wrap; 
     gap: 20px;       
     padding: 20px;
-    justify-content: center;
+    justify-content: normal;
 }
 
 .question {
