@@ -105,7 +105,8 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
     </p>
     </div>
       </div>
-    <script src="http://{WEB_HOST}:8081/scripts/coide.js"></script>
+      <script type="module" src="http://{WEB_HOST}:8081/scripts/constants.js"></script>
+      <script type="module" src="http://{WEB_HOST}:8081/scripts/coide.js"></script>
   </body></html>
 "#, title=title, question_html=question_html);
     return Html::from(html_document);
