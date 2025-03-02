@@ -107,13 +107,13 @@ class SolutionInstance:
 
         sys.path[0] = os.path.dirname(WORKING_DIRECTORY_ROOT + path[1:])
         self.log(sys.path[0])
+        self.disable_stdout()
 
         import main
 
         solution = main.Solution()
         function = solution.__getattribute__(function_name)
 
-        self.disable_stdout()
 
         cases = {str(i[0]): None for i in input_output}
 
