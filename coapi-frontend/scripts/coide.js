@@ -1,3 +1,5 @@
+import {IP, PORT} from "./constants.js";
+
 const run_button = document.querySelector(".runbutton");
 const test_button = document.querySelector(".test_code");
 const submit_button = document.querySelector(".submit_code");
@@ -9,7 +11,7 @@ const output_text = document.querySelector(".output-text");
 const sub_text = document.querySelector(".sub-text");
 
 
-const web_host = "127.0.0.1"
+enable_tabspace();
 
 
 console.log("coide");
@@ -97,7 +99,7 @@ function run_button_test() {
     myHeaders.append("content-type", "application/json");
 
     const request = new Request(
-          `http://${web_host}:8081/api/v1/test_code`, {
+          `http://${IP}:${PORT}/api/v1/test_code`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
@@ -153,7 +155,7 @@ function run_button_test() {
 
 function run_button_fn_ws() {
     clear_msgs();
-    const socket = new WebSocket(`ws://${web_host}:8081/ws/get_live_output`);
+    const socket = new WebSocket(`ws://${IP}:${PORT}/ws/get_live_output`);
     outputext.textContent = "";
 
     socket.addEventListener("open", (_event) => {
@@ -191,3 +193,25 @@ function run_button_fn_ws() {
 
 test_button.onclick = run_button_test;
 run_button.onclick = run_button_fn_ws;
+
+
+function enable_tabspace() {
+    console.log("Running...");
+
+    function keyHandler(e) {
+        var TABKEY = 9;
+        if(e.keyCode == TABKEY) {
+            this.value += "    ";
+            if(e.preventDefault) {
+                e.preventDefault();
+            }
+            return false;
+        }
+    }
+    var myInput = document.querySelector(".codebox");
+    if(myInput.addEventListener ) {
+        myInput.addEventListener('keydown', keyHandler, false);
+    } else if(myInput.attachEvent ) {
+        myInput.attachEvent('onkeydown', keyHandler); /* damn IE hack */
+    }
+}

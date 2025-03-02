@@ -1,3 +1,6 @@
+import {IP, PORT} from './constants.js';
+
+
 const add_button = document.querySelector(".add_button");
 const submit_button = document.querySelector(".submit_button");
 const title = document.querySelector(".title")
@@ -10,7 +13,7 @@ let options = [];
 let output_button_count = 2;
 
 
-const web_host = "127.0.0.1";
+const web_host = IP;
 
 
 // <label for="argument1">Argument 1:</label>
@@ -183,10 +186,10 @@ submit_button.addEventListener("click", function(event) {
     myHeaders.append("content-type", "application/json");
 
 
-    const arguments = document.querySelectorAll("textarea[name='argument']");
+    const arguments_ = document.querySelectorAll("textarea[name='argument']");
     const outputs = document.querySelectorAll("textarea[name='expected-output']");
 
-    arguments.forEach((argument, index) => {
+    arguments_.forEach((argument, index) => {
         console.log(`Argument ${index + 1}: ${argument.value}`);
         args.push(argument.value);
     });
@@ -202,7 +205,7 @@ submit_button.addEventListener("click", function(event) {
     console.log("Outputs:", outs);
 
     if (args.length === outs.length) {
-        for (i=0; i<args.length; i++) {
+        for (let i=0; i<args.length; i++) {
             myJson["data"][i] = {
                 "input": args[i],
                 "output": outs[i]
@@ -213,7 +216,7 @@ submit_button.addEventListener("click", function(event) {
     console.log(myJson)
 
     const request = new Request(
-          `http://${web_host}:8081/api/v1/create_question`, {
+          `http://${web_host}:${PORT}/api/v1/create_question`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),

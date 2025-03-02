@@ -1,8 +1,11 @@
+import {IP, PORT} from 'constants.js';
+
 const run_button = document.querySelector(".runbutton");
 const outputtext = document.querySelector(".outputext");
 
+// enable_tabspace();
 
-const web_host = "127.0.0.1";
+const web_host = IP;
 
 
 function update_output(text) {  
@@ -25,7 +28,7 @@ run_button.onclick = () => {
     };
 
     const request = new Request(
-          `http://${web_host}:8081/api/v1/test_code`, {
+          `http://${web_host}:${PORT}/api/v1/test_code`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
@@ -48,7 +51,7 @@ run_button.onclick = () => {
 }
 
 function live_code_execution() {
-    const socket = new WebSocket(`ws://${web_host}:8081/ws/get_live_output`);
+    const socket = new WebSocket(`ws://${web_host}:${PORT}/ws/get_live_output`);
 
     socket.addEventListener("open", (_event) => {
         const codeBox = document.querySelector(".codebox");
@@ -67,3 +70,5 @@ function live_code_execution() {
         update_output(data)
     });
 }
+
+

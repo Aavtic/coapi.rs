@@ -1,10 +1,14 @@
+import {IP, PORT} from './constants.js';
+
 const button = document.querySelector("button");
 const codeBox = document.querySelector("textarea");
 const output = document.querySelector(".outputext");
 const output_heading  = document.querySelector(".output-text");
 const status_text  = document.querySelector(".statustext");
 
-const web_host = "127.0.0.1";
+const web_host = IP;
+
+console.log(IP);
 
 
 button.onclick = () => {
@@ -20,7 +24,7 @@ const myHeaders = new Headers();
     };
 
     const request = new Request(
-          `http://${web_host}:8081/api/v1`, {
+          `http://${web_host}:${PORT}/api/v1`, {
           method: "POST",
           headers: myHeaders,
           body: JSON.stringify(myJson),
