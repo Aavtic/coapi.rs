@@ -1,7 +1,7 @@
 import json
 import gentypes
 import os
-import importlib
+import importlib.util
 import sys
 import argparse
 
