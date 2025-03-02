@@ -93,6 +93,76 @@ class Loader:
         return module
 
 
+class SolutionInstance:
+    # Inorder for this class to work the program should be ran if the "`main.py` is in the current directory
+    def __init__(self):
+        self.original_write = sys.stdout.write
+
+    def log(self, data):
+        with open("Solution.log", "a") as f:
+            f.write(data + "")
+
+    def test(self, input_output, function_name, path):
+        import sys
+
+        sys.path[0] = os.path.dirname(WORKING_DIRECTORY_ROOT + path[1:])
+        self.log(sys.path[0])
+
+        import main
+
+        solution = main.Solution()
+        function = solution.__getattribute__(function_name)
+
+        self.disable_stdout()
+
+        cases = {str(i[0]): None for i in input_output}
+
+        for (input, output) in input_output:
+            with open("runner.log", "a") as f:
+                f.write(f"input: {input}, input_type: {str(type(input))} " + f"output: {str(output)} output type: {str(type(output))}" "\n")
+            try:
+                # print(input, type(input))
+                self.disable_stdout()
+                result = function(input)
+            except Exception as e:
+                with open("runner.log", "a") as f:
+                    f.write("input: " + str(input) + str(e) + "\n")
+                self.enable_stdout()
+                error = URCodeErrorLOL(e).to_string()
+                sys.stdout.write(error)
+                sys.exit(0)
+
+            self.enable_stdout()
+
+            if (result is None) and output:
+                with open("runner.log", "a") as f:
+                    f.write("\n" + str(result) + ", " + str(output) + "\n")
+                sys.stdout.write(URCodeDontReturnAnything().to_string())
+                sys.exit(0)
+            if result == output:
+                cases[str(input)] = Pass
+            else:
+                fail = Fail(output, result, input)
+                sys.stdout.write(fail.to_string())
+                sys.exit(0)
+
+        # print(cases)
+        sys.stdout.write(Pass().to_string())
+        sys.exit(0)
+
+    def foo(self, uwu):
+        # what am I doing?
+        # Me? Just hangin around...
+        pass
+
+    def disable_stdout(self):
+        sys.stdout.write = self.foo
+
+    def enable_stdout(self):
+        sys.stdout.write = self.original_write
+
+
+
 class Runner:
     def __init__(self, qn_details: str):
         self.details = qn_details
@@ -122,53 +192,58 @@ class Runner:
             f.write(f"input_output: {str(input_output)}\n")
         function_name = gtypes.get_function_name()
 
-        self.disable_stdout()
-        try:
-            module = Loader().load_module(self.code_file)
-        # TODO: Pass error to the client
-        except Exception as e:
-            self.enable_stdout()
-            sys.stdout.write(URCodeErrorLOL(e).to_string())
-            sys.exit(0)
+        solution_instance = SolutionInstance()
+        solution_instance.test(input_output, function_name, self.code_file)
 
-        solution_instance = module.Solution()
-        function = getattr(solution_instance, function_name)
+        # solution_instance = SolutionInstance()
+        # solution_instance.test(input_output, function_name)
 
-        # ASSUMING INPUT MUST BE UNIQUE
-        cases = {str(i[0]): None for i in input_output}
-
-        for (input, output) in input_output:
-            with open("runner.log", "a") as f:
-                f.write(f"input: {input}, input_type: {str(type(input))} " + f"output: {str(output)} output type: {str(type(output))}" "\n")
-            try:
-                # print(input, type(input))
-                self.disable_stdout()
-                result = function(input)
-            except Exception as e:
-                with open("runner.log", "a") as f:
-                    f.write("input: " + str(type(input)) + str(function) + str(e) +"\n")
-                self.enable_stdout()
-                error = URCodeErrorLOL(e).to_string()
-                sys.stdout.write(error)
-                sys.exit(0)
-
-            self.enable_stdout()
-
-            if (result is None) and output:
-                with open("runner.log", "a") as f:
-                    f.write("\n" + str(result) + ", " + str(output) + "\n")
-                sys.stdout.write(URCodeDontReturnAnything().to_string())
-                sys.exit(0)
-            if result == output:
-                cases[str(input)] = Pass
-            else:
-                fail = Fail(output, result, input)
-                sys.stdout.write(fail.to_string())
-                sys.exit(0)
-
-        # print(cases)
-        sys.stdout.write(Pass().to_string())
-        sys.exit(0)
+        # try:
+        #     module = Loader().load_module(self.code_file)
+        # # TODO: Pass error to the client
+        # except Exception as e:
+        #     self.enable_stdout()
+        #     sys.stdout.write(URCodeErrorLOL(e).to_string())
+        #     sys.exit(0)
+        #
+        # solution_instance = module.Solution()
+        # function = getattr(solution_instance, function_name)
+        #
+        # # ASSUMING INPUT MUST BE UNIQUE
+        # cases = {str(i[0]): None for i in input_output}
+        #
+        # for (input, output) in input_output:
+        #     with open("runner.log", "a") as f:
+        #         f.write(f"input: {input}, input_type: {str(type(input))} " + f"output: {str(output)} output type: {str(type(output))}" "\n")
+        #     try:
+        #         # print(input, type(input))
+        #         self.disable_stdout()
+        #         result = function(input)
+        #     except Exception as e:
+        #         with open("runner.log", "a") as f:
+        #             f.write("input: " + str(type(input)) + str(function) + str(e) +"\n")
+        #         self.enable_stdout()
+        #         error = URCodeErrorLOL(e).to_string()
+        #         sys.stdout.write(error)
+        #         sys.exit(0)
+        #
+        #     self.enable_stdout()
+        #
+        #     if (result is None) and output:
+        #         with open("runner.log", "a") as f:
+        #             f.write("\n" + str(result) + ", " + str(output) + "\n")
+        #         sys.stdout.write(URCodeDontReturnAnything().to_string())
+        #         sys.exit(0)
+        #     if result == output:
+        #         cases[str(input)] = Pass
+        #     else:
+        #         fail = Fail(output, result, input)
+        #         sys.stdout.write(fail.to_string())
+        #         sys.exit(0)
+        #
+        # # print(cases)
+        # sys.stdout.write(Pass().to_string())
+        # sys.exit(0)
 
     def parse_details(self, data: str):
         try:
@@ -177,7 +252,6 @@ class Runner:
             cooked = Cooked()
             sys.stdout.write(cooked)
             sys.exit(0)
-
 
 if __name__ == "__main__":
     opts = parser.parse_args()
