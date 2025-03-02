@@ -61,7 +61,7 @@ struct TestCodeRequest {
 }
 
 #[derive(Serialize)]
-struct TestCodeResponse {
+struct _TestCodeResponse {
     status: IPCStatus,
 }
 
@@ -353,8 +353,9 @@ async fn insert_question(Json(question_request): Json<AddQuestion>) -> Response 
         argument_name: argument_name.to_string(),
     };
 
+    // TODO: Saving Question Info is done using python which is not necessary and prone to errors.
+    // Rewrite ts in Rust.  
     let res = generate_python_binding::bind_gen_python(geninput);
-
 
 
     if let Ok(gen_code) = res {
