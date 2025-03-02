@@ -126,7 +126,7 @@ class SolutionInstance:
                 result = function(input)
             except Exception as e:
                 with open("runner.log", "a") as f:
-                    f.write("input: " + str(input) + str(e) + "\n")
+                    f.write("input: " + str(input) +  str(e) + "\n")
                 self.enable_stdout()
                 error = URCodeErrorLOL(e).to_string()
                 sys.stdout.write(error)
