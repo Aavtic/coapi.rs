@@ -1,45 +1,66 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>COAPI</title>
-    <link rel="stylesheet" href="styles/styles.css" />
-  </head>
+<!DOCTYPE html>
+<html lang="en"><head>
+      <meta charset="utf-8">
+      <title class="title">Check Armstrong Number</title>
+      <link rel="stylesheet" href="./styles/view_question.css">
+   </head>
+   <body>
+      <div class="lcontainer">
+         <div class="header">
+            <h1><code class="main_title">CO-IDE<b class="cursor">▊</b></code></h1>
+         </div>
+         <div class="left">
+            <div class="question_container">
+               
+                                <div class="question">
+                                <h1 name="title">whoami</h1>
+                                <div name="description" class="description"> 
 
-  <body>
-      <h1><code>COAPI.rs<b class="cursor">▊</b></code></h1>
 
-     <div class="container">
-
-     <div class="code_box_button">
-     <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
+<h3 id="Description">COAPI
+   is is a web-app for providing programming problems and testing them against users programs.
+</h3>
+ <h3 id="currently-available-languages">Currently Available
+ Languages</h3>
+ <ul>
+ <li>Python 3.10-3.13</li>
+ </ul>
+ </div>
+                                </div>
+                                
+            </div>
+         </div>
+      </div>
+      <div class="right">
+         <div class="container">
+            <div class="code_box_button">
+               <textarea class="codebox" placeholder="Enter your code here..." rows="20" cols="80"> 
+# COAPI: https://github.com/aavtic/coapi.rs
+# Write your code here...
      </textarea>
+               <div class="function_buttons">
+                  
+               <button class="runbutton">
+                  Run
+                  </button></div>
+            </div>
+            <div class="output" id="inneroutput" tabindex="0">
+               <h1 class="output-text" id="nil"></h1>
+               <h2 class="sub-text" id="nil"></h2>
+               <div id="output_cursor">
+                  <pre id="outputext" class="outputext"><span class="cursor">▊</span></pre>
+               </div>
+               <h3 class="statustext"></h3>
+            </div>
+         </div>
+         <div class="footer">
+            <p>
+               This is an open source project and is available on <a href="https://github.com/aavtic/coapi.rs">GitHub</a>
+            </p>
+         </div>
+      </div>
+      <script type="module" src="./scripts/constants.js"></script>
+      <script type="module" src="./scripts/main.js"></script>
+   
 
-     <button class="runbutton">
-         Run
-     </button>
-
-     </div>
-
-     <div class="output">
-         <h2 class="output-text"></h2>
-         <p class="outputext">
-         <h3 class="statustext"></h3>
-         </p>
-     </div>
-
-     </div>
-
-
-     <div class="footer">
-    <p>
-    This is an open source project and is available on <a href="https://github.com/aavtic/coapi.rs">GitHub</a>
-    </p>
-    </div>
-
-    <script type="module" src="./scripts/constants.js"></script>
-    <script type="module" src="./scripts/main.js"></script>
-
-  </body>
-</html>
-
+</body></html>
