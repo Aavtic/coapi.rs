@@ -126,7 +126,7 @@ fn poll_live_output(filename: String, sender: Sender<StdinData>) {
     let (tx, rx) = channel();
 
     let t1 = std::thread::spawn(move || {
-        let _ = poller::live_read_stdin("python3".to_string(), vec![filename, "2>&1".to_string()], tx);
+        let _ = poller::live_read_stdin("bash".to_string(), vec!["-c".to_string(), format!(r#"bash -c "python3 {filename} 2>&1""#, filename=filename)], tx);
     });
     // std::io::stdout().lock();
  
