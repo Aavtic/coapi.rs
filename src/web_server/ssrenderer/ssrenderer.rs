@@ -51,63 +51,61 @@ pub fn generate_question_html(question: DbAddQuestion) -> Html<String> {
                                 </div>
                                 "#, title=title, description=description);
     let html_document = format!(r#"
-<html lang="en"><head>
-    <meta charset="utf-8">
-    <title class="title">{title}</title>
-    <link rel="stylesheet" href="http://{WEB_HOST}:8081/styles/view_question.css">
-  </head>
-
-  <body>
-  <div class="lcontainer">
-      <div class="header">
-          <h1><code class="main_title">CO-IDE<b class="cursor">▊</b></code></h1>
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <title class="title">{title}</title>
+      <link rel="stylesheet" href="http://{WEB_HOST}:8081/styles/view_question.css">
+   </head>
+   <body>
+      <div class="lcontainer">
+         <div class="header">
+            <h1><code class="main_title">CO-IDE<b class="cursor">▊</b></code></h1>
+         </div>
+         <div class="left">
+            <div class="question_container">
+               {question_html}
+            </div>
+         </div>
       </div>
-      <div class="left">
-      <div class="question_container">
-      {question_html}
-      </div>
-  </div>
-  </div>
       <div class="right">
-           <div class="container">
-
-     <div class="code_box_button">
-  <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
+         <div class="container">
+            <div class="code_box_button">
+               <textarea class="codebox" placeholder="Enter your code here..." rows=20 cols=80> 
 {code_template}
      </textarea>
-
-     <div class="function_buttons">
-         <button class="runbutton">
-             Run
-         </button>
-
-         <button class="test_code">
-            Test Code
-         </button>
-
-         <button class="submit_code">
-            Submit
-         </button>
-     </div>
-
-     </div>
-     <div class="output" id="inneroutput" tabindex="0">
-<h1 class="output-text" id="nil"></h1>
-<h2 class="sub-text" id="nil"></h2>
-<div id="output_cursor"><pre id="outputext" class="outputext"><span class="cursor">▊</span></pre></div>
-<h3 class="statustext"></h3>
-     </div>
-     </div>
-
-     <div class="footer">
-    <p>
-    This is an open source project and is available on <a href="https://github.com/aavtic/coapi.rs">GitHub</a>
-    </p>
-    </div>
+               <div class="function_buttons">
+                  <button class="runbutton">
+                  Run
+                  </button>
+                  <button class="test_code">
+                  Test Code
+                  </button>
+                  <button class="submit_code">
+                  Submit
+                  </button>
+               </div>
+            </div>
+            <div class="output" id="inneroutput" tabindex="0">
+               <h1 class="output-text" id="nil"></h1>
+               <h2 class="sub-text" id="nil"></h2>
+               <div id="output_cursor">
+                  <pre id="outputext" class="outputext"><span class="cursor">▊</span></pre>
+               </div>
+               <h3 class="statustext"></h3>
+            </div>
+         </div>
+         <div class="footer">
+            <p>
+               This is an open source project and is available on <a href="https://github.com/aavtic/coapi.rs">GitHub</a>
+            </p>
+         </div>
       </div>
       <script type="module" src="http://{WEB_HOST}:8081/scripts/constants.js"></script>
       <script type="module" src="http://{WEB_HOST}:8081/scripts/coide.js"></script>
-  </body></html>
+   </body>
+</html>
 "#, title=title, question_html=question_html);
     return Html::from(html_document);
 }

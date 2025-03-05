@@ -98,21 +98,23 @@ class SolutionInstance:
     def __init__(self):
         self.original_write = sys.stdout.write
 
-    def log(self, data):
-        with open("Solution.log", "a") as f:
-            f.write(data + "")
-
     def test(self, input_output, function_name, path):
         import sys
 
         sys.path[0] = os.path.dirname(WORKING_DIRECTORY_ROOT + path[1:])
-        self.log(sys.path[0])
+        # self.log(sys.path[0])
         self.disable_stdout()
 
-        import main
-
-        solution = main.Solution()
-        function = solution.__getattribute__(function_name)
+        try:
+            import main
+            solution = main.Solution()
+            function = solution.__getattribute__(function_name)
+        except Exception as e:
+            print("error")
+            error = URCodeErrorLOL(e).to_string()
+            self.enable_stdout()
+            sys.stdout.write(error)
+            sys.exit(0)
 
 
         cases = {str(i[0]): None for i in input_output}
@@ -185,6 +187,10 @@ class Runner:
     def enable_stdout(self):
         sys.stdout.write = self.original_write
 
+    def log(self, data):
+        with open("runner.log", "a") as f:
+            f.write(f"{str(data)}\n")
+
     def run(self):
         gtypes = gentypes.GenTypes(self.question_settings)
         input_output = gtypes.parse_contents()
@@ -250,7 +256,9 @@ class Runner:
             self.parsed = json.loads(data)
         except Exception as e:
             cooked = Cooked()
-            sys.stdout.write(cooked)
+            self.log("COOKED:")
+            self.log(e)
+            sys.stdout.write(cooked.to_string())
             sys.exit(0)
 
 if __name__ == "__main__":
