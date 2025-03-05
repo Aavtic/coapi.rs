@@ -66,8 +66,8 @@ add_button.addEventListener("click", function () {
     newdiv1.appendChild(newTextarea1);
 
     const container = document.getElementById("output-container");
-    container.appendChild(newdiv);
     container.appendChild(newdiv1);
+    container.appendChild(newdiv);
 });
 
 // {
